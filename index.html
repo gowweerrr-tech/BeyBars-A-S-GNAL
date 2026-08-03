@@ -452,7 +452,10 @@
       updateStatsUI();
     }
 
-    function updateStatsUI() {
+    function updateStatsUI() {const total = dailyData.plus + dailyData.minus;
+
+document.getElementById('dashboardWinrate').innerText = winrate + "%";
+document.getElementById('dashboardTrades').innerText = total;
       const total = dailyData.plus + dailyData.minus;
       const winrate = total > 0 ? Math.round((dailyData.plus / total) * 100) : 0;
       const progress = dailyData.goal > 0 ? Math.min(Math.round((total / dailyData.goal) * 100), 100) : 0;
