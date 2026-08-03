@@ -465,6 +465,10 @@
       document.getElementById('statMinus').innerText = dailyData.minus;
       document.getElementById('winrateDisplay').innerText = `${winrate}%`;
       document.getElementById('goalProgressBar').style.width = `${progress}%`;
+    const total = dailyData.plus + dailyData.minus;
+
+      document.getElementById('dashboardWinrate').innerText = winrate + "%";
+      document.getElementById('dashboardTrades').innerText = total;
     }
 
     function resetStats() {
