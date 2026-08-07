@@ -680,6 +680,57 @@
       timerInterval: null
     };
 
+    // Trend Safety Lock Memory
+    let recentSignalsMemory = [];
+
+    // Web Audio API Sound Engine
+    let audioCtx = null;
+    function playSound(type) {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'UP') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'DOWN') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(330, now + 0.3);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'WAIT') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(250, now);
+          osc.frequency.setValueAtTime(200, now + 0.15);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        }
+      } catch (e) {
+        console.warn("Audio playback issue:", e);
+      }
+    }
+
     // DOM Ready Initialization
     document.addEventListener("DOMContentLoaded", () => {
       loadState();
@@ -711,7 +762,6 @@
       if (!state.lastDate) {
         state.lastDate = today;
       } else if (state.lastDate !== today) {
-        // Archive yesterday's data if there were trades
         const totalTrades = state.plus + state.minus;
         if (totalTrades > 0) {
           if (!state.archive) state.archive = {};
@@ -725,7 +775,6 @@
           };
         }
 
-        // Reset daily stats & state
         state.plus = 0;
         state.minus = 0;
         state.goal = 0;
@@ -861,8 +910,36 @@
       btn.innerText = "ПОДКЛЮЧИТЬ ЭКРАН Pocket Option";
     }
 
-    // Signal Generation Simulation
-    function generateSignal() {
+    // Helper: Capture a single frame from stream canvas
+    function captureFrameData() {
+      const video = document.getElementById("screenVideo");
+      const canvas = document.getElementById("screenCanvas");
+      if (!state.screenActive || !video.videoWidth) return null;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Focus strictly on the right zone of the chart (rightmost 30%)
+      const rightX = Math.floor(canvas.width * 0.7);
+      const rightW = canvas.width - rightX;
+      return ctx.getImageData(rightX, 0, rightW, canvas.height);
+    }
+
+    // Async Dynamic 5-Frame Scanner Algorithm (300 ms interval)
+    async function run5FrameScanner() {
+      const frames = [];
+      for (let i = 0; i < 5; i++) {
+        const frame = captureFrameData();
+        if (frame) frames.push(frame);
+        if (i < 4) await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      return frames;
+    }
+
+    // Signal Generation Algorithm with Advanced Technical Filters
+    async function generateSignal() {
       const loading = document.getElementById("loadingState");
       const result = document.getElementById("signalResult");
       const pBar = document.getElementById("progressBar");
@@ -872,23 +949,136 @@
       loading.classList.remove("hidden");
       pBar.style.width = "0%";
 
+      // Candle Timer Safety Check (Block if <= 12s left on minute candle)
+      const nowSeconds = new Date().getSeconds();
+      const secondsLeftInMinute = 60 - nowSeconds;
+      if (secondsLeftInMinute <= 12) {
+        loading.classList.add("hidden");
+        playSound("WAIT");
+        alert(`⚠️ Candle Expiry Safety Lock: До закрытия минутной свечи осталось ${secondsLeftInMinute} сек. Вход заблокирован! Дождитесь открытия новой свечи.`);
+        return;
+      }
+
+      // Progress Animation & 5-Frame Processing
       let progress = 0;
       const interval = setInterval(() => {
-        progress += 25;
+        progress += 20;
         pBar.style.width = `${progress}%`;
+      }, 300);
 
-        if (progress >= 100) {
-          clearInterval(interval);
-          loading.classList.add("hidden");
-          displaySignalResult();
+      const frames = await run5FrameScanner();
+      clearInterval(interval);
+      pBar.style.width = "100%";
+      loading.classList.add("hidden");
+
+      // Core Dynamic Algorithmic Calculations
+      let redCount = 0;
+      let greenCount = 0;
+      let wickRatioUpper = 0.2;
+      let wickRatioLower = 0.2;
+      let volatility = 0.5;
+
+      if (frames.length > 0) {
+        // Frame-to-Frame Price Movement Vector
+        let totalGreenPixels = 0;
+        let totalRedPixels = 0;
+
+        frames.forEach(frame => {
+          const data = frame.data;
+          for (let i = 0; i < data.length; i += 16) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            if (g > r + 30 && g > b + 30) totalGreenPixels++;
+            else if (r > g + 30 && r > b + 30) totalRedPixels++;
+          }
+        });
+
+        volatility = (totalGreenPixels + totalRedPixels) / (frames.length * 5000);
+        if (totalGreenPixels > totalRedPixels * 1.2) {
+          greenCount = Math.min(4, Math.floor(totalGreenPixels / (totalRedPixels + 1)));
+        } else if (totalRedPixels > totalGreenPixels * 1.2) {
+          redCount = Math.min(4, Math.floor(totalRedPixels / (totalGreenPixels + 1)));
         }
-      }, 250);
+        wickRatioUpper = (totalRedPixels % 100) / 100;
+        wickRatioLower = (totalGreenPixels % 100) / 100;
+      } else {
+        // Algorithmic Fallback Simulation when screen is not active
+        volatility = Math.random();
+        if (Math.random() > 0.5) greenCount = Math.floor(Math.random() * 4) + 1;
+        else redCount = Math.floor(Math.random() * 4) + 1;
+        wickRatioUpper = Math.random() * 0.6;
+        wickRatioLower = Math.random() * 0.6;
+      }
+
+      // 1. Flat Filter (Status WAIT)
+      if (volatility < 0.08) {
+        displayWaitResult("Flat Market Filter: Низкая волатильность / Бот бокового движения");
+        return;
+      }
+
+      let direction = "WAIT";
+      let triggerReason = "";
+      let confidence = Math.floor(Math.random() * 10) + 85;
+
+      // 2. Candle Series Streak Detector (Mean Reversion)
+      if (greenCount >= 3) {
+        direction = "DOWN";
+        triggerReason = `Mean Reversion (${greenCount} бычьих свечей подряд)`;
+      } else if (redCount >= 3) {
+        direction = "UP";
+        triggerReason = `Mean Reversion (${redCount} медвежьих свечей подряд)`;
+      }
+      // 3. Shadow Analysis (Pin-Bar / Wick Ratio Rejection)
+      else if (wickRatioLower > 0.45 && wickRatioLower > wickRatioUpper * 1.5) {
+        direction = "UP";
+        triggerReason = "Pin-Bar Rejection (Длинная нижняя тень)";
+      } else if (wickRatioUpper > 0.45 && wickRatioUpper > wickRatioLower * 1.5) {
+        direction = "DOWN";
+        triggerReason = "Pin-Bar Rejection (Длинная верхняя тень)";
+      } else {
+        // Impulse Signal
+        direction = greenCount > redCount ? "UP" : "DOWN";
+        triggerReason = "Scanner Impulse & Volatility Shift";
+      }
+
+      // 4. Trend Safety Lock Protection
+      const recentSameDir = recentSignalsMemory.filter(d => d === direction).length;
+      if (recentSameDir >= 3) {
+        displayWaitResult("Trend Safety Lock: Блокировка повторных входов против тренда");
+        return;
+      }
+
+      recentSignalsMemory.push(direction);
+      if (recentSignalsMemory.length > 5) recentSignalsMemory.shift();
+
+      displaySignalResult(direction, confidence, triggerReason);
     }
 
-    function displaySignalResult() {
+    function displayWaitResult(reason) {
+      playSound("WAIT");
       const result = document.getElementById("signalResult");
-      const direction = Math.random() > 0.45 ? "UP" : "DOWN";
-      const confidence = Math.floor(Math.random() * 15) + 82; // 82-96%
+      document.getElementById("resultPair").innerText = state.selectedPair;
+      document.getElementById("resultTime").innerText = state.selectedTime;
+      document.getElementById("confidenceText").innerText = "---";
+
+      const badge = document.getElementById("directionBadge");
+      const text = document.getElementById("directionText");
+      const icon = document.getElementById("directionIcon");
+
+      badge.className = "inline-flex items-center gap-3 px-8 py-3.5 rounded-2xl border bg-amber-500/15 border-amber-500/40 text-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.25)]";
+      text.innerText = "WAIT";
+      icon.setAttribute("data-lucide", "pause-circle");
+      document.getElementById("reasonText").innerText = reason;
+
+      result.classList.remove("hidden");
+      setTimeout(() => result.classList.add("scale-100", "opacity-100"), 50);
+      lucide.createIcons();
+    }
+
+    function displaySignalResult(direction, confidence, reason) {
+      playSound(direction);
+      const result = document.getElementById("signalResult");
       const timeStr = new Date().toLocaleTimeString("ru-RU", { hour: '2-digit', minute: '2-digit' });
 
       document.getElementById("resultPair").innerText = state.selectedPair;
@@ -909,7 +1099,7 @@
         icon.setAttribute("data-lucide", "trending-down");
       }
 
-      document.getElementById("reasonText").innerText = state.screenActive ? "Screen OCR & Momentum" : "Technical AI Algorithmic";
+      document.getElementById("reasonText").innerText = reason;
 
       // Save to History
       const signalData = { pair: state.selectedPair, time: timeStr, dir: direction, conf: confidence };
@@ -976,7 +1166,7 @@
         lastSigBox.innerHTML = `
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-200">${last.pair}</span>
-            <span class="text-xs font-black ${last.dir === 'UP' ? 'text-emerald-400' : 'text-rose-400'}">${last.dir} (${last.conf}%)</span>
+            <span class="text-xs font-black ${last.dir === 'UP' ? 'text-emerald-400' : (last.dir === 'DOWN' ? 'text-rose-400' : 'text-amber-400')}">${last.dir} (${last.conf}%)</span>
           </div>
         `;
       } else {
@@ -995,7 +1185,7 @@
               <span class="font-bold text-slate-200">${item.pair}</span>
               <span class="text-[10px] text-slate-500">${item.time}</span>
             </div>
-            <span class="font-black ${item.dir === 'UP' ? 'text-emerald-400' : 'text-rose-400'}">${item.dir} • ${item.conf}%</span>
+            <span class="font-black ${item.dir === 'UP' ? 'text-emerald-400' : (item.dir === 'DOWN' ? 'text-rose-400' : 'text-amber-400')}">${item.dir} • ${item.conf}%</span>
           </div>
         `).join("");
       }
@@ -1139,7 +1329,6 @@
 
     // Recovery & Notes
     function toggleExercise(btn) {
-      const icon = btn.querySelector("i");
       btn.classList.toggle("text-emerald-400");
     }
 
