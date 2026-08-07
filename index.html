@@ -1,1116 +1,585 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BEYBARS AI</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BEYBARS AI</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-  <style>
-    body {
-      background-color: #030712;
-      color: #f3f4f6;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      padding-bottom: 90px;
-    }
+  <style>
+    body {
+      background-color: #030712;
+      color: #f3f4f6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: 90px;
+    }
 
-    /* Glassmorphism styles */
-    .glass-card {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    
-    .glass-card-glow {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(59, 130, 246, 0.35);
-      box-shadow: 0 0 35px rgba(59, 130, 246, 0.15);
-    }
+    /* Glassmorphism styles */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .glass-card-glow {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      box-shadow: 0 0 35px rgba(59, 130, 246, 0.15);
+    }
 
-    /* Animations */
-    @keyframes pulseGlow {
-      0%, 100% { opacity: 0.2; transform: scale(1); }
-      50% { opacity: 0.35; transform: scale(1.1); }
-    }
+    /* Animations */
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.1); }
+    }
 
-    .glow-bg-1 {
-      animation: pulseGlow 8s ease-in-out infinite;
-    }
+    .glow-bg-1 {
+      animation: pulseGlow 8s ease-in-out infinite;
+    }
 
-    /* Custom Scrollbar */
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(59, 130, 246, 0.4);
-      border-radius: 4px;
-    }
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.4);
+      border-radius: 4px;
+    }
 
-    .fade-enter {
-      animation: fadeIn 0.4s ease-out forwards;
-    }
+    .fade-enter {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-    .nav-tab.active {
-      color: #60a5fa;
-      background: rgba(59, 130, 246, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
-    }
+    .nav-tab.active {
+      color: #60a5fa;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
 
-    /* Pill Card Active States */
-    .pill-taken {
-      background: rgba(16, 185, 129, 0.12) !important;
-      border-color: rgba(16, 185, 129, 0.4) !important;
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
-    }
-  </style>
+    /* Pill Card Active States */
+    .pill-taken {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border-color: rgba(16, 185, 129, 0.4) !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+  </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden flex flex-col justify-between p-4 max-w-md mx-auto">
 
-  <!-- Dynamic Glowing Background -->
-  <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-    <div class="glow-bg-1 absolute -top-32 -left-32 w-96 h-96 bg-blue-600/30 rounded-full blur-[120px]"></div>
-    <div class="glow-bg-1 absolute top-1/2 -right-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-[140px]" style="animation-delay: 2s;"></div>
-    <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20"></div>
-  </div>
-
-  <!-- Goal Modal Overlay -->
-  <div id="goalModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
-    <div class="glass-card-glow p-6 rounded-3xl w-full max-w-sm space-y-5 fade-enter border-blue-500/40">
-      <div class="text-center space-y-2">
-        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto mb-2">
-          <i data-lucide="target" class="w-6 h-6 animate-pulse"></i>
-        </div>
-        <h2 class="text-lg font-bold text-slate-100">Цель по сделкам на сегодня</h2>
-        <p class="text-xs text-slate-400">Укажите, сколько сделок планируете открыть за сегодняшнюю сессию</p>
-      </div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Количество сделок</label>
-          <input type="number" id="goalInput" placeholder="Например: 100" min="1" max="1000" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 text-center font-bold focus:outline-none focus:border-blue-500 placeholder-slate-600 shadow-inner">
-        </div>
-
-        <button onclick="setDailyGoal()" class="w-full py-3.5 rounded-2xl font-bold text-xs tracking-wider transition-all active:scale-95 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2">
-          <i data-lucide="play" class="w-4 h-4"></i>
-          НАЧАТЬ ТОРГОВЛЮ
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <header class="flex items-center justify-between w-full mb-4 p-4 glass-card rounded-2xl shadow-xl">
-    <div class="flex items-center gap-3">
-      <div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400">
-        <i data-lucide="cpu" class="w-6 h-6 animate-pulse"></i>
-      </div>
-      <div>
-        <h1 class="text-base font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent tracking-wide">
-          BEYBARS AI
-        </h1>
-        <p class="text-[11px] text-slate-400">v3.0 Pro Engine</p>
-      </div>
-    </div>
-    <div class="flex items-center gap-2">
-      <button onclick="openGoalModal()" title="Изменить цель" class="p-2 rounded-xl bg-slate-800/80 border border-slate-700/80 text-blue-400 hover:border-blue-500/50 transition-all text-xs font-bold flex items-center gap-1">
-        <i data-lucide="target" class="w-4 h-4"></i>
-        <span id="headerGoalDisplay">0</span>
-      </button>
-      <div class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-        <span class="text-[11px] font-semibold text-emerald-400">ONLINE</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content Areas -->
-  <div id="mainContainer">
-
-    <!-- TAB 1: HOME SECTION -->
-    <section id="section-home" class="tab-content space-y-4 fade-enter">
-      <div class="glass-card p-5 rounded-3xl space-y-4">
-        <div>
-          <h2 class="text-xl font-bold text-white">Добро пожаловать 👋</h2>
-          <p class="text-sm text-slate-400">BEYBARS AI Personal Dashboard</p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div class="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-            <p class="text-xs text-slate-400">Win Rate</p>
-            <p id="dashboardWinrate" class="text-2xl font-bold text-blue-400">0%</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-            <p class="text-xs text-slate-400">Сделок</p>
-            <p id="dashboardTrades" class="text-2xl font-bold text-emerald-400">0</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div class="glass-card p-4 rounded-2xl space-y-1">
-          <div class="flex items-center gap-2 text-amber-400">
-            <i data-lucide="target" class="w-4 h-4"></i>
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Сегодняшняя цель</span>
-          </div>
-          <p id="homeGoalDisplay" class="text-xl font-black text-slate-100">0</p>
-          <p class="text-[10px] text-slate-500">Запланировано сделок</p>
-        </div>
-
-        <div class="glass-card p-4 rounded-2xl space-y-1">
-          <div class="flex items-center gap-2 text-cyan-400">
-            <i data-lucide="activity" class="w-4 h-4"></i>
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Сделок сегодня</span>
-          </div>
-          <p id="homeTradesDisplay" class="text-xl font-black text-slate-100">0</p>
-          <p class="text-[10px] text-slate-500">Плюсы + Минусы</p>
-        </div>
-      </div>
-
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
-          <div class="flex items-center gap-2 text-slate-200">
-            <i data-lucide="radio" class="w-4 h-4 text-blue-400 animate-pulse"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider">Последний сигнал</h3>
-          </div>
-          <span id="homeLastSignalTime" class="text-[10px] text-slate-500">Нет данных</span>
-        </div>
-        <div id="homeLastSignalBox" class="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 text-center">
-          <p class="text-xs text-slate-500">Сигналы еще не генерировались</p>
-        </div>
-      </div>
-
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Быстрые действия</h3>
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="switchTab('signals')" class="p-3.5 rounded-2xl bg-blue-600/20 border border-blue-500/40 text-blue-300 hover:bg-blue-600/30 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
-            <i data-lucide="sparkles" class="w-4 h-4"></i>
-            Получить сигнал
-          </button>
-          <button onclick="openGoalModal()" class="p-3.5 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
-            <i data-lucide="edit-3" class="w-4 h-4"></i>
-            Задать цель
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 2: SIGNALS SECTION -->
-    <main id="section-signals" class="tab-content space-y-4 hidden">
-      
-      <!-- Control Form -->
-      <div class="glass-card p-5 rounded-3xl space-y-4">
-        
-        <!-- Screen Stream Control Block -->
-        <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
-          <div class="flex justify-between items-center">
-            <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="monitor" class="w-4 h-4 text-cyan-400"></i> Захват экрана
-            </span>
-            <span id="screenStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">
-              ОТКЛЮЧЕН
-            </span>
-          </div>
-          <button id="screenStreamBtn" onclick="toggleScreenCapture()" class="w-full py-2.5 rounded-xl font-bold text-xs tracking-wider transition-all bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center gap-2">
-            <i data-lucide="video" class="w-4 h-4"></i>
-            ПОДКЛЮЧИТЬ ЭКРАН Pocket Option
-          </button>
-        </div>
-
-        <!-- Hidden elements for frame processing -->
-        <video id="screenVideo" class="hidden" autoplay playsinline muted></video>
-        <canvas id="screenCanvas" class="hidden"></canvas>
-
-        <!-- Currency Pair Selector -->
-        <div class="space-y-2 relative">
-          <div class="flex justify-between items-center">
-            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Валютная пара (50 OTC)</label>
-            <span id="selectedPairBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">EUR/USD OTC</span>
-          </div>
-
-          <button id="dropdownToggle" onclick="toggleDropdown()" class="w-full p-3.5 rounded-2xl text-xs font-semibold text-left border bg-slate-900/60 border-slate-700/80 text-slate-200 flex items-center justify-between hover:border-blue-500/50 transition-all">
-            <span id="dropdownSelectedText" class="flex items-center gap-2">
-              <i data-lucide="coins" class="w-4 h-4 text-blue-400"></i>
-              EUR/USD OTC
-            </span>
-            <i data-lucide="chevron-down" id="dropdownChevron" class="w-4 h-4 text-slate-400 transition-transform"></i>
-          </button>
-
-          <div id="dropdownMenu" class="hidden absolute left-0 right-0 top-full mt-2 z-50 glass-card-glow rounded-2xl p-3 space-y-2 shadow-2xl border border-blue-500/30">
-            <div class="relative">
-              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-              <input type="text" id="pairSearchInput" oninput="filterPairs()" placeholder="Поиск пары (например, RUB, USD...)" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 placeholder-slate-500">
-            </div>
-
-            <div id="pairsContainer" class="max-h-48 overflow-y-auto space-y-1 custom-scrollbar pr-1"></div>
-          </div>
-        </div>
-
-        <!-- Timeframe Selector -->
-        <div class="space-y-2">
-          <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Время экспирации</label>
-          <div class="grid grid-cols-3 gap-2" id="timeGrid">
-            <button onclick="selectTime(this, '15 Seconds')" class="time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-blue-600/20 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]">15 Sec</button>
-            <button onclick="selectTime(this, '30 Seconds')" class="time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-slate-900/40 border-slate-800 text-slate-400">30 Sec</button>
-            <button onclick="selectTime(this, '1 Minute')" class="time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-slate-900/40 border-slate-800 text-slate-400">1 Min</button>
-          </div>
-        </div>
-
-        <!-- Generate Button -->
-        <button id="generateBtn" onclick="generateSignal()" class="w-full py-4 rounded-2xl font-bold text-sm tracking-wide transition-all active:scale-95 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2">
-          <i data-lucide="sparkles" class="w-4 h-4"></i>
-          GENERATE SIGNAL
-        </button>
-      </div>
-
-      <!-- Loading State -->
-      <div id="loadingState" class="hidden glass-card-glow p-6 rounded-3xl text-center space-y-5 my-4">
-        <div class="relative flex items-center justify-center w-16 h-16 mx-auto">
-          <div class="absolute inset-0 rounded-full border-2 border-dashed border-blue-500/40 animate-spin"></div>
-          <i data-lucide="loader-2" class="w-8 h-8 text-blue-400 animate-spin"></i>
-        </div>
-        <div class="space-y-2">
-          <p id="loadingText" class="text-xs font-semibold text-blue-300 tracking-wide">Analyzing Screen & Market Data...</p>
-          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden p-0.5 border border-white/5">
-            <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full shadow-[0_0_12px_rgba(59,130,246,0.8)] transition-all duration-300" style="width: 0%;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Signal Result Card -->
-      <div id="signalResult" class="hidden glass-card-glow p-6 rounded-3xl space-y-5 my-4 border-blue-500/40 relative overflow-hidden transition-all duration-500 transform scale-95 opacity-0">
-        <div class="flex justify-between items-center text-xs text-slate-400">
-          <span id="resultPair" class="font-bold text-slate-200">EUR/USD OTC</span>
-          <span id="resultTime" class="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">15 Seconds</span>
-        </div>
-
-        <div class="text-center py-1">
-          <div id="directionBadge" class="inline-flex items-center gap-3 px-8 py-3.5 rounded-2xl border bg-emerald-500/15 border-emerald-500/40 text-emerald-400 shadow-[0_0_25px_rgba(34,197,94,0.25)]">
-            <i id="directionIcon" data-lucide="trending-up" class="w-8 h-8"></i>
-            <span id="directionText" class="text-3xl font-black tracking-wider">UP</span>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <div class="flex items-center gap-1.5 text-[11px] text-slate-400 mb-1">
-              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-400"></i> Confidence
-            </div>
-            <p id="confidenceText" class="text-lg font-bold text-slate-100">87%</p>
-          </div>
-          <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <div class="flex items-center gap-1.5 text-[11px] text-slate-400 mb-1">
-              <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> AI Trigger
-            </div>
-            <p id="reasonText" class="text-xs font-semibold text-slate-200 truncate">Screen Analysis</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION: STATISTICS -->
-      <div class="glass-card p-5 rounded-3xl space-y-4">
-        <div class="flex justify-between items-center border-b border-slate-800/80 pb-3">
-          <div class="flex items-center gap-2 text-slate-200">
-            <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-400"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider">Статистика за сегодня</h3>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="statDate" class="text-[10px] text-slate-500 font-mono">00.00.0000</span>
-            <button onclick="resetStats()" title="Сбросить статистику" class="p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all text-[10px] font-bold flex items-center gap-1">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              <span>Сброс</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/90 space-y-3">
-          <div class="flex justify-between items-end">
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Текущий Winrate</p>
-              <p id="winrateDisplay" class="text-3xl font-black bg-gradient-to-r from-emerald-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent">0%</p>
-            </div>
-            <div class="text-right">
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Прогресс цели</p>
-              <p class="text-xs font-bold text-slate-200"><span id="statTotal">0</span> / <span id="statGoal">0</span></p>
-            </div>
-          </div>
-
-          <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden p-0.5 border border-white/5">
-            <div id="goalProgressBar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="addResult('plus')" class="py-3.5 px-4 rounded-2xl font-bold text-xs tracking-wider transition-all active:scale-95 bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            ПЛЮС (+1)
-          </button>
-          <button onclick="addResult('minus')" class="py-3.5 px-4 rounded-2xl font-bold text-xs tracking-wider transition-all active:scale-95 bg-rose-500/15 border border-rose-500/40 text-rose-400 hover:bg-rose-500/25 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-            <i data-lucide="minus-circle" class="w-4 h-4"></i>
-            МИНУС (-1)
-          </button>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
-            <p class="text-[10px] font-semibold text-slate-400">Плюсы</p>
-            <p id="statPlus" class="text-sm font-bold text-emerald-400">0</p>
-          </div>
-          <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
-            <p class="text-[10px] font-semibold text-slate-400">Минусы</p>
-            <p id="statMinus" class="text-sm font-bold text-rose-400">0</p>
-          </div>
-          <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
-            <p class="text-[10px] font-semibold text-slate-400">Всего</p>
-            <p id="statCountCard" class="text-sm font-bold text-slate-200">0</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- History Block -->
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <div class="flex items-center gap-2 text-slate-300 border-b border-slate-800/80 pb-2.5">
-          <i data-lucide="history" class="w-4 h-4 text-blue-400"></i>
-          <h3 class="text-xs font-bold uppercase tracking-wider">История сигналов</h3>
-        </div>
-        <div id="historyList" class="space-y-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
-          <p id="emptyHistory" class="text-xs text-center text-slate-500 py-4">История пуста</p>
-        </div>
-      </div>
-
-      <!-- SECTION: PAST ARCHIVE -->
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <div class="flex items-center gap-2 text-slate-300 border-b border-slate-800/80 pb-2.5">
-          <i data-lucide="archive" class="w-4 h-4 text-cyan-400"></i>
-          <h3 class="text-xs font-bold uppercase tracking-wider">Архив прошлых дней</h3>
-        </div>
-        <div id="archiveList" class="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-          <p id="emptyArchive" class="text-xs text-center text-slate-500 py-3">Прошлых записей пока нет</p>
-        </div>
-      </div>
-
-    </main>
-
-    <!-- TAB 3: PLANNER SECTION -->
-    <section id="section-planner" class="tab-content space-y-4 hidden">
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
-          <div class="flex items-center gap-2 text-slate-200">
-            <i data-lucide="calendar" class="w-4 h-4 text-blue-400"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider">Календарь и План на день</h3>
-          </div>
-          <span id="plannerTodayText" class="text-xs text-blue-400 font-bold"></span>
-        </div>
-        
-        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-          <div>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Таймер сессии</p>
-            <p id="plannerTimerDisplay" class="text-2xl font-black text-cyan-400 font-mono">00:00:00</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="timerToggleBtn" onclick="togglePlannerTimer()" class="p-2.5 rounded-xl bg-blue-600/20 border border-blue-500/40 text-blue-300 font-bold text-xs flex items-center gap-1 hover:bg-blue-600/30">
-              <i data-lucide="play" id="timerIcon" class="w-4 h-4"></i>
-            </button>
-            <button onclick="resetPlannerTimer()" class="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold text-xs flex items-center gap-1 hover:bg-rose-500/30">
-              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass-card p-4 rounded-3xl space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Новая задача</h3>
-        <div class="flex gap-2">
-          <input type="text" id="newTaskInput" placeholder="Введите задачу..." class="flex-1 bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
-          <button onclick="addPlannerTask()" class="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all active:scale-95 flex items-center gap-1">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-          </button>
-        </div>
-      </div>
-
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Список задач</h3>
-        <div id="plannerTaskList" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-          <p class="text-xs text-slate-500 text-center py-4">Задач пока нет</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 4: GOALS SECTION -->
-    <section id="section-goals" class="tab-content space-y-4 hidden">
-      <div class="glass-card p-5 rounded-3xl space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
-          <div class="flex items-center gap-2 text-slate-200">
-            <i data-lucide="target" class="w-5 h-5 text-indigo-400"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider">Отслеживание целей</h3>
-          </div>
-          <button onclick="addGoalPrompt()" class="px-3 py-1.5 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-bold text-xs flex items-center gap-1">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Добавить
-          </button>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-300">Дневные цели</span>
-            <span id="dailyGoalsPercent" class="text-indigo-400 font-bold">0%</span>
-          </div>
-          <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-white/5">
-            <div id="dailyGoalsBar" class="bg-gradient-to-r from-indigo-500 to-blue-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
-          </div>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-300">Недельные цели</span>
-            <span id="weeklyGoalsPercent" class="text-cyan-400 font-bold">0%</span>
-          </div>
-          <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-white/5">
-            <div id="weeklyGoalsBar" class="bg-gradient-to-r from-cyan-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
-          </div>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-300">Месячные цели</span>
-            <span id="monthlyGoalsPercent" class="text-emerald-400 font-bold">0%</span>
-          </div>
-          <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-white/5">
-            <div id="monthlyGoalsBar" class="bg-gradient-to-r from-emerald-500 to-green-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Все цели</h3>
-        <div id="goalsList" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-          <p class="text-xs text-slate-500 text-center py-4">Целей пока нет</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 5: RECOVERY SECTION -->
-    <section id="section-recovery" class="tab-content space-y-4 hidden">
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
-          <div class="flex items-center gap-2 text-slate-200">
-            <i data-lucide="heart-pulse" class="w-5 h-5 text-rose-400"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider">Восстановление и Отдых</h3>
-          </div>
-        </div>
-        <p class="text-xs text-slate-400">Упражнения для снятия напряжения во время торговых сессий.</p>
-      </div>
-
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Рекомендуемые упражнения</h3>
-        
-        <div id="exerciseList" class="space-y-2">
-          <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <button onclick="toggleExercise(this)" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">
-                <i data-lucide="circle" class="w-5 h-5"></i>
-              </button>
-              <div>
-                <p class="text-xs font-bold text-slate-200">Гимнастика для глаз (2 мин)</p>
-                <p class="text-[10px] text-slate-400">Фокус вдали и вблизи, круговые вращения</p>
-              </div>
-            </div>
-          </div>
-          <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <button onclick="toggleExercise(this)" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">
-                <i data-lucide="circle" class="w-5 h-5"></i>
-              </button>
-              <div>
-                <p class="text-xs font-bold text-slate-200">Дыхательная техника 4-7-8</p>
-                <p class="text-[10px] text-slate-400">Снижает пульс и стресс при неудачах</p>
-              </div>
-            </div>
-          </div>
-          <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <button onclick="toggleExercise(this)" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">
-                <i data-lucide="circle" class="w-5 h-5"></i>
-              </button>
-              <div>
-                <p class="text-xs font-bold text-slate-200">Разминка шеи и плеч</p>
-                <p class="text-[10px] text-slate-400">Улучшает кровообращение головы</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Заметки по самочувствию</h3>
-        <textarea id="recoveryNotes" oninput="saveRecoveryNotes()" rows="3" placeholder="Запишите ваши мысли, уровень усталости или результаты..." class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500 custom-scrollbar"></textarea>
-      </div>
-    </section>
-
-    <!-- TAB 6: PILLS SECTION -->
-    <section id="section-pills" class="tab-content space-y-4 hidden">
-      <div class="glass-card p-5 rounded-3xl space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
-          <div class="flex items-center gap-2 text-slate-200">
-            <i data-lucide="pill" class="w-5 h-5 text-emerald-400"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider">Приём лекарств</h3>
-          </div>
-          <span id="pillsTodayText" class="text-xs text-emerald-400 font-bold font-mono"></span>
-        </div>
-        <p class="text-xs text-slate-400">Ежедневный график и статус приема препаратов.</p>
-      </div>
-
-      <div class="space-y-3">
-        <div id="card-brufen" class="glass-card p-4 rounded-2xl space-y-3 transition-all border border-slate-800">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs font-bold text-slate-100">Бруфен / Обезболивающее</p>
-              <p class="text-[10px] text-slate-400">После еды • 1 таблетка</p>
-            </div>
-            <button onclick="togglePillTaken('brufen')" id="btnPill-brufen" class="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1 hover:border-emerald-500/50">
-              <i data-lucide="check-circle" class="w-4 h-4"></i>
-              <span id="txtPill-brufen">Принять</span>
-            </button>
-          </div>
-        </div>
-
-        <div id="card-vitamins" class="glass-card p-4 rounded-2xl space-y-3 transition-all border border-slate-800">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs font-bold text-slate-100">Витаминный комплекс</p>
-              <p class="text-[10px] text-slate-400">Утром • 1 капсула</p>
-            </div>
-            <button onclick="togglePillTaken('vitamins')" id="btnPill-vitamins" class="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1 hover:border-emerald-500/50">
-              <i data-lucide="check-circle" class="w-4 h-4"></i>
-              <span id="txtPill-vitamins">Принять</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <!-- Bottom Navigation Bar -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 p-3 bg-slate-950/80 backdrop-blur-xl border-t border-slate-800/80 max-w-md mx-auto">
-    <div class="grid grid-cols-6 gap-1 text-center">
-      <button onclick="switchTab('home')" id="tab-home" class="nav-tab active p-2 rounded-2xl flex flex-col items-center justify-center transition-all">
-        <i data-lucide="home" class="w-4 h-4"></i>
-        <span class="text-[9px] font-bold mt-1">Главная</span>
-      </button>
-
-      <button onclick="switchTab('signals')" id="tab-signals" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
-        <i data-lucide="zap" class="w-4 h-4"></i>
-        <span class="text-[9px] font-bold mt-1">Сигналы</span>
-      </button>
-
-      <button onclick="switchTab('planner')" id="tab-planner" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
-        <i data-lucide="calendar" class="w-4 h-4"></i>
-        <span class="text-[9px] font-bold mt-1">Планер</span>
-      </button>
-
-      <button onclick="switchTab('goals')" id="tab-goals" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
-        <i data-lucide="target" class="w-4 h-4"></i>
-        <span class="text-[9px] font-bold mt-1">Цели</span>
-      </button>
-
-      <button onclick="switchTab('recovery')" id="tab-recovery" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
-        <i data-lucide="heart-pulse" class="w-4 h-4"></i>
-        <span class="text-[9px] font-bold mt-1">Отдых</span>
-      </button>
-
-      <button onclick="switchTab('pills')" id="tab-pills" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
-        <i data-lucide="pill" class="w-4 h-4"></i>
-        <span class="text-[9px] font-bold mt-1">Аптека</span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- JavaScript App Logic -->
-  <script>
-    // Initial State & OTC Pairs List
-    const OTC_PAIRS = [
-      "EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/USD OTC", "USD/CHF OTC",
-      "NZD/USD OTC", "EUR/GBP OTC", "EUR/JPY OTC", "GBP/JPY OTC", "USD/CAD OTC",
-      "AUD/JPY OTC", "CAD/JPY OTC", "EUR/CAD OTC", "EUR/AUD OTC", "GBP/CAD OTC",
-      "NZD/JPY OTC", "AUD/CAD OTC", "GBP/AUD OTC", "USD/RUB OTC", "EUR/RUB OTC",
-      "USD/TRY OTC", "EUR/TRY OTC", "USD/BRL OTC", "USD/INR OTC", "USD/CNH OTC",
-      "USD/MXN OTC", "USD/ZAR OTC", "USD/PHP OTC", "USD/IDR OTC", "USD/EGP OTC",
-      "USD/PKR OTC", "USD/BDT OTC", "USD/NGN OTC", "USD/ARS OTC", "USD/CLP OTC",
-      "USD/COP OTC", "USD/PEN OTC", "USD/VND OTC", "USD/KRW OTC", "USD/SGD OTC",
-      "USD/AED OTC", "USD/SAR OTC", "USD/KWD OTC", "USD/QAR OTC", "USD/THB OTC",
-      "USD/MYR OTC", "BTC/USD OTC", "ETH/USD OTC", "LTC/USD OTC", "XRP/USD OTC"
-    ];
-
-    let state = {
-      selectedPair: "EUR/USD OTC",
-      selectedTime: "15 Seconds",
-      goal: 0,
-      plus: 0,
-      minus: 0,
-      history: [],
-      archive: {},
-      tasks: [],
-      goals: [],
-      pills: {},
-      notes: "",
-      screenActive: false,
-      mediaStream: null,
-      timerRunning: false,
-      timerSeconds: 0,
-      timerInterval: null
-    };
-
-    // DOM Ready Initialization
-    document.addEventListener("DOMContentLoaded", () => {
-      loadState();
-      initDateDisplays();
-      renderPairsList();
-      updateUI();
-      lucide.createIcons();
-    });
-
-    function saveState() {
-      localStorage.setItem("beybars_ai_state", JSON.stringify(state));
-    }
-
-    function loadState() {
-      const saved = localStorage.getItem("beybars_ai_state");
-      if (saved) {
-        try {
-          state = { ...state, ...JSON.parse(saved) };
-        } catch(e) {
-          console.error("Error loading state", e);
-        }
-      }
-    }
-
-    function initDateDisplays() {
-      const today = new Date().toLocaleDateString("ru-RU");
-      document.getElementById("statDate").innerText = today;
-      document.getElementById("plannerTodayText").innerText = today;
-      document.getElementById("pillsTodayText").innerText = today;
-      document.getElementById("recoveryNotes").value = state.notes || "";
-    }
-
-    // Navigation Logic
-    function switchTab(tabName) {
-      document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-      document.querySelectorAll(".nav-tab").forEach(el => {
-        el.classList.remove("active");
-        el.classList.add("text-slate-400");
-      });
-
-      const targetSection = document.getElementById(`section-${tabName}`);
-      const targetTab = document.getElementById(`tab-${tabName}`);
-
-      if (targetSection) targetSection.classList.remove("hidden");
-      if (targetTab) {
-        targetTab.classList.add("active");
-        targetTab.classList.remove("text-slate-400");
-      }
-    }
-
-    // Goals & Modal
-    function openGoalModal() {
-      document.getElementById("goalModal").classList.remove("hidden");
-      document.getElementById("goalInput").value = state.goal || "";
-    }
-
-    function setDailyGoal() {
-      const val = parseInt(document.getElementById("goalInput").value);
-      if (val && val > 0) {
-        state.goal = val;
-        saveState();
-        updateUI();
-        document.getElementById("goalModal").classList.add("hidden");
-      }
-    }
-
-    // Pair Dropdown & Filtering
-    function toggleDropdown() {
-      const menu = document.getElementById("dropdownMenu");
-      const chevron = document.getElementById("dropdownChevron");
-      menu.classList.toggle("hidden");
-      chevron.classList.toggle("rotate-180");
-    }
-
-    function renderPairsList(filter = "") {
-      const container = document.getElementById("pairsContainer");
-      container.innerHTML = "";
-      const filtered = OTC_PAIRS.filter(p => p.toLowerCase().includes(filter.toLowerCase()));
-
-      filtered.forEach(pair => {
-        const btn = document.createElement("button");
-        btn.className = "w-full text-left px-3 py-2 rounded-xl text-xs font-semibold hover:bg-blue-600/20 text-slate-200 transition-colors flex items-center justify-between";
-        btn.innerHTML = `<span>${pair}</span>` + (pair === state.selectedPair ? `<i data-lucide="check" class="w-3.5 h-3.5 text-blue-400"></i>` : "");
-        btn.onclick = () => selectPair(pair);
-        container.appendChild(btn);
-      });
-      lucide.createIcons();
-    }
-
-    function filterPairs() {
-      const query = document.getElementById("pairSearchInput").value;
-      renderPairsList(query);
-    }
-
-    function selectPair(pair) {
-      state.selectedPair = pair;
-      document.getElementById("selectedPairBadge").innerText = pair;
-      document.getElementById("dropdownSelectedText").innerHTML = `<i data-lucide="coins" class="w-4 h-4 text-blue-400"></i> ${pair}`;
-      toggleDropdown();
-      saveState();
-      lucide.createIcons();
-    }
-
-    function selectTime(btn, time) {
-      document.querySelectorAll(".time-btn").forEach(b => {
-        b.className = "time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-slate-900/40 border-slate-800 text-slate-400";
-      });
-      btn.className = "time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-blue-600/20 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
-      state.selectedTime = time;
-      saveState();
-    }
-
-    // Screen Capture Integration
-    async function toggleScreenCapture() {
-      const badge = document.getElementById("screenStatusBadge");
-      const btn = document.getElementById("screenStreamBtn");
-
-      if (!state.screenActive) {
-        try {
-          state.mediaStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-          const video = document.getElementById("screenVideo");
-          video.srcObject = state.mediaStream;
-          state.screenActive = true;
-
-          badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-          badge.innerText = "ПОДКЛЮЧЕН";
-          btn.innerText = "ОТКЛЮЧИТЬ ЭКРАН";
-
-          state.mediaStream.getVideoTracks()[0].onended = () => stopScreenCapture();
-        } catch (err) {
-          console.warn("Screen stream cancelled or failed", err);
-        }
-      } else {
-        stopScreenCapture();
-      }
-    }
-
-    function stopScreenCapture() {
-      if (state.mediaStream) {
-        state.mediaStream.getTracks().forEach(track => track.stop());
-      }
-      state.screenActive = false;
-      const badge = document.getElementById("screenStatusBadge");
-      const btn = document.getElementById("screenStreamBtn");
-      badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30";
-      badge.innerText = "ОТКЛЮЧЕН";
-      btn.innerText = "ПОДКЛЮЧИТЬ ЭКРАН Pocket Option";
-    }
-
-    // Signal Generation Simulation
-    function generateSignal() {
-      const loading = document.getElementById("loadingState");
-      const result = document.getElementById("signalResult");
-      const pBar = document.getElementById("progressBar");
-
-      result.classList.add("hidden");
-      result.classList.remove("scale-100", "opacity-100");
-      loading.classList.remove("hidden");
-      pBar.style.width = "0%";
-
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 25;
-        pBar.style.width = `${progress}%`;
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          loading.classList.add("hidden");
-          displaySignalResult();
-        }
-      }, 250);
-    }
-
-    function displaySignalResult() {
-      const result = document.getElementById("signalResult");
-      const direction = Math.random() > 0.45 ? "UP" : "DOWN";
-      const confidence = Math.floor(Math.random() * 15) + 82; // 82-96%
-      const timeStr = new Date().toLocaleTimeString("ru-RU", { hour: '2-digit', minute: '2-digit' });
-
-      document.getElementById("resultPair").innerText = state.selectedPair;
-      document.getElementById("resultTime").innerText = state.selectedTime;
-      document.getElementById("confidenceText").innerText = `${confidence}%`;
-      
-      const badge = document.getElementById("directionBadge");
-      const text = document.getElementById("directionText");
-      const icon = document.getElementById("directionIcon");
-
-      if (direction === "UP") {
-        badge.className = "inline-flex items-center gap-3 px-8 py-3.5 rounded-2xl border bg-emerald-500/15 border-emerald-500/40 text-emerald-400 shadow-[0_0_25px_rgba(34,197,94,0.25)]";
-        text.innerText = "ВВЕРХ (CALL)";
-        icon.setAttribute("data-lucide", "trending-up");
-      } else {
-        badge.className = "inline-flex items-center gap-3 px-8 py-3.5 rounded-2xl border bg-rose-500/15 border-rose-500/40 text-rose-400 shadow-[0_0_25px_rgba(239,68,68,0.25)]";
-        text.innerText = "ВНИЗ (PUT)";
-        icon.setAttribute("data-lucide", "trending-down");
-      }
-
-      document.getElementById("reasonText").innerText = state.screenActive ? "Screen OCR & Momentum" : "Technical AI Algorithmic";
-
-      // Save to History
-      const signalData = { pair: state.selectedPair, time: timeStr, dir: direction, conf: confidence };
-      state.history.unshift(signalData);
-      if (state.history.length > 20) state.history.pop();
-      
-      saveState();
-      updateUI();
-
-      result.classList.remove("hidden");
-      setTimeout(() => {
-        result.classList.add("scale-100", "opacity-100");
-      }, 50);
-      lucide.createIcons();
-    }
-
-    // Stats Management
-    function addResult(type) {
-      if (type === 'plus') state.plus++;
-      if (type === 'minus') state.minus++;
-      saveState();
-      updateUI();
-    }
-
-    function resetStats() {
-      if (confirm("Сбросить текущую статистику сессии?")) {
-        state.plus = 0;
-        state.minus = 0;
-        saveState();
-        updateUI();
-      }
-    }
-
-    // UI Render Engine
-    function updateUI() {
-      const totalTrades = state.plus + state.minus;
-      const winrate = totalTrades > 0 ? Math.round((state.plus / totalTrades) * 100) : 0;
-
-      // Header & Dashboard Updates
-      document.getElementById("headerGoalDisplay").innerText = state.goal;
-      document.getElementById("homeGoalDisplay").innerText = state.goal;
-      document.getElementById("dashboardWinrate").innerText = `${winrate}%`;
-      document.getElementById("dashboardTrades").innerText = totalTrades;
-      document.getElementById("homeTradesDisplay").innerText = totalTrades;
-
-      // Statistics Section
-      document.getElementById("winrateDisplay").innerText = `${winrate}%`;
-      document.getElementById("statGoal").innerText = state.goal;
-      document.getElementById("statTotal").innerText = totalTrades;
-      document.getElementById("statPlus").innerText = state.plus;
-      document.getElementById("statMinus").innerText = state.minus;
-      document.getElementById("statCountCard").innerText = totalTrades;
-
-      const progressPercent = state.goal > 0 ? Math.min(100, Math.round((totalTrades / state.goal) * 100)) : 0;
-      document.getElementById("goalProgressBar").style.width = `${progressPercent}%`;
-
-      // Home Page Last Signal
-      const lastSigBox = document.getElementById("homeLastSignalBox");
-      const lastSigTime = document.getElementById("homeLastSignalTime");
-
-      if (state.history.length > 0) {
-        const last = state.history[0];
-        lastSigTime.innerText = last.time;
-        lastSigBox.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-200">${last.pair}</span>
-            <span class="text-xs font-black ${last.dir === 'UP' ? 'text-emerald-400' : 'text-rose-400'}">${last.dir} (${last.conf}%)</span>
-          </div>
-        `;
-      } else {
-        lastSigTime.innerText = "Нет данных";
-        lastSigBox.innerHTML = `<p class="text-xs text-slate-500">Сигналы еще не генерировались</p>`;
-      }
-
-      // History Render
-      const historyList = document.getElementById("historyList");
-      if (state.history.length === 0) {
-        historyList.innerHTML = `<p id="emptyHistory" class="text-xs text-center text-slate-500 py-4">История пуста</p>`;
-      } else {
-        historyList.innerHTML = state.history.map(item => `
-          <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-slate-200">${item.pair}</span>
-              <span class="text-[10px] text-slate-500">${item.time}</span>
-            </div>
-            <span class="font-black ${item.dir === 'UP' ? 'text-emerald-400' : 'text-rose-400'}">${item.dir} • ${item.conf}%</span>
-          </div>
-        `).join("");
-      }
-
-      renderTasks();
-      renderGoals();
-      updatePillsUI();
-    }
-
-    // Planner Timer
-    function togglePlannerTimer() {
-      const btnIcon = document.getElementById("timerIcon");
-      if (!state.timerRunning) {
-        state.timerRunning = true;
-        btnIcon.setAttribute("data-lucide", "pause");
-        state.timerInterval = setInterval(() => {
-          state.timerSeconds++;
-          updateTimerDisplay();
-        }, 1000);
-      } else {
-        state.timerRunning = false;
-        btnIcon.setAttribute("data-lucide", "play");
-        clearInterval(state.timerInterval);
-      }
-      lucide.createIcons();
-    }
-
-    function resetPlannerTimer() {
-      state.timerRunning = false;
-      clearInterval(state.timerInterval);
-      state.timerSeconds = 0;
-      updateTimerDisplay();
-      document.getElementById("timerIcon").setAttribute("data-lucide", "play");
-      lucide.createIcons();
-    }
-
-    function updateTimerDisplay() {
-      const hrs = String(Math.floor(state.timerSeconds / 3600)).padStart(2, '0');
-      const mins = String(Math.floor((state.timerSeconds % 3600) / 60)).padStart(2, '0');
-      const secs = String(state.timerSeconds % 60).padStart(2, '0');
-      document.getElementById("plannerTimerDisplay").innerText = `${hrs}:${mins}:${secs}`;
-    }
-
-    // Planner Tasks
-    function addPlannerTask() {
-      const input = document.getElementById("newTaskInput");
-      if (input.value.trim()) {
-        state.tasks.push({ text: input.value.trim(), done: false });
-        input.value = "";
-        saveState();
-        renderTasks();
-      }
-    }
-
-    function toggleTask(index) {
-      state.tasks[index].done = !state.tasks[index].done;
-      saveState();
-      renderTasks();
-    }
-
-    function renderTasks() {
-      const list = document.getElementById("plannerTaskList");
-      if (!list) return;
-      if (state.tasks.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Задач пока нет</p>`;
-        return;
-      }
-      list.innerHTML = state.tasks.map((task, i) => `
-        <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
-          <span class="${task.done ? 'line-through text-slate-500' : 'text-slate-200'}">${task.text}</span>
-          <button onclick="toggleTask(${i})" class="p-1 text-slate-400 hover:text-emerald-400">
-            <i data-lucide="${task.done ? 'check-circle' : 'circle'}" class="w-4 h-4"></i>
-          </button>
-        </div>
-      `).join("");
-      lucide.createIcons();
-    }
-
-    // Goals Section Logic
-    function addGoalPrompt() {
-      const text = prompt("Введите цель:");
-      if (text) {
-        state.goals.push({ text, done: false });
-        saveState();
-        renderGoals();
-      }
-    }
-
-    function renderGoals() {
-      const list = document.getElementById("goalsList");
-      if (!list) return;
-      if (state.goals.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Целей пока нет</p>`;
-        return;
-      }
-      list.innerHTML = state.goals.map((g, i) => `
-        <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
-          <span class="${g.done ? 'line-through text-slate-500' : 'text-slate-200'}">${g.text}</span>
-          <button onclick="toggleGoal(${i})" class="p-1 text-slate-400 hover:text-indigo-400">
-            <i data-lucide="${g.done ? 'check-square' : 'square'}" class="w-4 h-4"></i>
-          </button>
-        </div>
-      `).join("");
-      lucide.createIcons();
-    }
-
-    function toggleGoal(i) {
-      state.goals[i].done = !state.goals[i].done;
-      saveState();
-      renderGoals();
-    }
-
-    // Recovery & Notes
-    function toggleExercise(btn) {
-      const icon = btn.querySelector("i");
-      btn.classList.toggle("text-emerald-400");
-    }
-
-    function saveRecoveryNotes() {
-      state.notes = document.getElementById("recoveryNotes").value;
-      saveState();
-    }
-
-    // Pills System
-    function togglePillTaken(id) {
-      state.pills[id] = !state.pills[id];
-      saveState();
-      updatePillsUI();
-    }
-
-    function updatePillsUI() {
-      ['brufen', 'vitamins'].forEach(id => {
-        const card = document.getElementById(`card-${id}`);
-        const btn = document.getElementById(`btnPill-${id}`);
-        const txt = document.getElementById(`txtPill-${id}`);
-        if (!card || !btn) return;
-
-        if (state.pills[id]) {
-          card.classList.add("pill-taken");
-          txt.innerText = "Принято";
-          btn.className = "px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1";
-        } else {
-          card.classList.remove("pill-taken");
-          txt.innerText = "Принять";
-          btn.className = "px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1 hover:border-emerald-500/50";
-        }
-      });
-    }
-  </script>
-</body>
-</html>
+  <!-- Dynamic Glowing Background -->
+  <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+    <div class="glow-bg-1 absolute -top-32 -left-32 w-96 h-96 bg-blue-600/30 rounded-full blur-[120px]"></div>
+    <div class="glow-bg-1 absolute top-1/2 -right-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-[140px]" style="animation-delay: 2s;"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20"></div>
+  </div>
+
+  <!-- Goal Modal Overlay -->
+  <div id="goalModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div class="glass-card-glow p-6 rounded-3xl w-full max-w-sm space-y-5 fade-enter border-blue-500/40">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto mb-2">
+          <i data-lucide="target" class="w-6 h-6 animate-pulse"></i>
+        </div>
+        <h2 class="text-lg font-bold text-slate-100">Цель по сделкам на сегодня</h2>
+        <p class="text-xs text-slate-400">Укажите, сколько сделок планируете открыть за сегодняшнюю сессию</p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Количество сделок</label>
+          <input type="number" id="goalInput" placeholder="Например: 100" min="1" max="1000" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 text-center font-bold focus:outline-none focus:border-blue-500 placeholder-slate-600 shadow-inner">
+        </div>
+
+        <button onclick="setDailyGoal()" class="w-full py-3.5 rounded-2xl font-bold text-xs tracking-wider transition-all active:scale-95 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2">
+          <i data-lucide="play" class="w-4 h-4"></i>
+          НАЧАТЬ ТОРГОВЛЮ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="flex items-center justify-between w-full mb-4 p-4 glass-card rounded-2xl shadow-xl">
+    <div class="flex items-center gap-3">
+      <div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400">
+        <i data-lucide="cpu" class="w-6 h-6 animate-pulse"></i>
+      </div>
+      <div>
+        <h1 class="text-base font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent tracking-wide">
+          BEYBARS AI
+        </h1>
+        <p class="text-[11px] text-slate-400">v3.0 Pro Engine</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="openGoalModal()" title="Изменить цель" class="p-2 rounded-xl bg-slate-800/80 border border-slate-700/80 text-blue-400 hover:border-blue-500/50 transition-all text-xs font-bold flex items-center gap-1">
+        <i data-lucide="target" class="w-4 h-4"></i>
+        <span id="headerGoalDisplay">0</span>
+      </button>
+      <div class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span class="text-[11px] font-semibold text-emerald-400">ONLINE</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Areas -->
+  <div id="mainContainer">
+
+    <!-- TAB 1: HOME SECTION -->
+    <section id="section-home" class="tab-content space-y-4 fade-enter">
+      <div class="glass-card p-5 rounded-3xl space-y-4">
+        <div>
+          <h2 class="text-xl font-bold text-white">Добро пожаловать 👋</h2>
+          <p class="text-sm text-slate-400">BEYBARS AI Personal Dashboard</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+            <p class="text-xs text-slate-400">Win Rate</p>
+            <p id="dashboardWinrate" class="text-2xl font-bold text-blue-400">0%</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+            <p class="text-xs text-slate-400">Сделок</p>
+            <p id="dashboardTrades" class="text-2xl font-bold text-emerald-400">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="glass-card p-4 rounded-2xl space-y-1">
+          <div class="flex items-center gap-2 text-amber-400">
+            <i data-lucide="target" class="w-4 h-4"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Сегодняшняя цель</span>
+          </div>
+          <p id="homeGoalDisplay" class="text-xl font-black text-slate-100">0</p>
+          <p class="text-[10px] text-slate-500">Запланировано сделок</p>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl space-y-1">
+          <div class="flex items-center gap-2 text-cyan-400">
+            <i data-lucide="activity" class="w-4 h-4"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Сделок сегодня</span>
+          </div>
+          <p id="homeTradesDisplay" class="text-xl font-black text-slate-100">0</p>
+          <p class="text-[10px] text-slate-500">Плюсы + Минусы</p>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="radio" class="w-4 h-4 text-blue-400 animate-pulse"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider">Последний сигнал</h3>
+          </div>
+          <span id="homeLastSignalTime" class="text-[10px] text-slate-500">Нет данных</span>
+        </div>
+        <div id="homeLastSignalBox" class="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 text-center">
+          <p class="text-xs text-slate-500">Сигналы еще не генерировались</p>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Быстрые действия</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="switchTab('signals')" class="p-3.5 rounded-2xl bg-blue-600/20 border border-blue-500/40 text-blue-300 hover:bg-blue-600/30 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            Получить сигнал
+          </button>
+          <button onclick="openGoalModal()" class="p-3.5 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+            Задать цель
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: SIGNALS SECTION -->
+    <main id="section-signals" class="tab-content space-y-4 hidden">
+      
+      <!-- Control Form -->
+      <div class="glass-card p-5 rounded-3xl space-y-4">
+        
+        <!-- Screen Stream Control Block -->
+        <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="monitor" class="w-4 h-4 text-cyan-400"></i> Захват экрана
+            </span>
+            <span id="screenStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">
+              ОТКЛЮЧЕН
+            </span>
+          </div>
+          <button id="screenStreamBtn" onclick="toggleScreenCapture()" class="w-full py-2.5 rounded-xl font-bold text-xs tracking-wider transition-all bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center gap-2">
+            <i data-lucide="video" class="w-4 h-4"></i>
+            ПОДКЛЮЧИТЬ ЭКРАН Pocket Option
+          </button>
+        </div>
+
+        <!-- Hidden elements for frame processing -->
+        <video id="screenVideo" class="hidden" autoplay playsinline muted></video>
+        <canvas id="screenCanvas" class="hidden"></canvas>
+
+        <!-- Currency Pair Selector -->
+        <div class="space-y-2 relative">
+          <div class="flex justify-between items-center">
+            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Валютная пара (50 OTC)</label>
+            <span id="selectedPairBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">EUR/USD OTC</span>
+          </div>
+
+          <button id="dropdownToggle" onclick="toggleDropdown()" class="w-full p-3.5 rounded-2xl text-xs font-semibold text-left border bg-slate-900/60 border-slate-700/80 text-slate-200 flex items-center justify-between hover:border-blue-500/50 transition-all">
+            <span id="dropdownSelectedText" class="flex items-center gap-2">
+              <i data-lucide="coins" class="w-4 h-4 text-blue-400"></i>
+              EUR/USD OTC
+            </span>
+            <i data-lucide="chevron-down" id="dropdownChevron" class="w-4 h-4 text-slate-400 transition-transform"></i>
+          </button>
+
+          <div id="dropdownMenu" class="hidden absolute left-0 right-0 top-full mt-2 z-50 glass-card-glow rounded-2xl p-3 space-y-2 shadow-2xl border border-blue-500/30">
+            <div class="relative">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="pairSearchInput" oninput="filterPairs()" placeholder="Поиск пары (например, RUB, USD...)" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 placeholder-slate-500">
+            </div>
+
+            <div id="pairsContainer" class="max-h-48 overflow-y-auto space-y-1 custom-scrollbar pr-1"></div>
+          </div>
+        </div>
+
+        <!-- Timeframe Selector -->
+        <div class="space-y-2">
+          <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Время экспирации</label>
+          <div class="grid grid-cols-3 gap-2" id="timeGrid">
+            <button onclick="selectTime(this, '15 Seconds')" class="time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-blue-600/20 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]">15 Sec</button>
+            <button onclick="selectTime(this, '30 Seconds')" class="time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-slate-900/40 border-slate-800 text-slate-400">30 Sec</button>
+            <button onclick="selectTime(this, '1 Minute')" class="time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-slate-900/40 border-slate-800 text-slate-400">1 Min</button>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button id="generateBtn" onclick="generateSignal()" class="w-full py-4 rounded-2xl font-bold text-sm tracking-wide transition-all active:scale-95 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          GENERATE SIGNAL
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="hidden glass-card-glow p-6 rounded-3xl text-center space-y-5 my-4">
+        <div class="relative flex items-center justify-center w-16 h-16 mx-auto">
+          <div class="absolute inset-0 rounded-full border-2 border-dashed border-blue-500/40 animate-spin"></div>
+          <i data-lucide="loader-2" class="w-8 h-8 text-blue-400 animate-spin"></i>
+        </div>
+        <div class="space-y-2">
+          <p id="loadingText" class="text-xs font-semibold text-blue-300 tracking-wide">Analyzing Screen & Market Data...</p>
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden p-0.5 border border-white/5">
+            <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full shadow-[0_0_12px_rgba(59,130,246,0.8)] transition-all duration-300" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signal Result Card -->
+      <div id="signalResult" class="hidden glass-card-glow p-6 rounded-3xl space-y-5 my-4 border-blue-500/40 relative overflow-hidden transition-all duration-500 transform scale-95 opacity-0">
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span id="resultPair" class="font-bold text-slate-200">EUR/USD OTC</span>
+          <span id="resultTime" class="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700">15 Seconds</span>
+        </div>
+
+        <div class="text-center py-1">
+          <div id="directionBadge" class="inline-flex items-center gap-3 px-8 py-3.5 rounded-2xl border bg-emerald-500/15 border-emerald-500/40 text-emerald-400 shadow-[0_0_25px_rgba(34,197,94,0.25)]">
+            <i id="directionIcon" data-lucide="trending-up" class="w-8 h-8"></i>
+            <span id="directionText" class="text-3xl font-black tracking-wider">UP</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-400 mb-1">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-400"></i> Confidence
+            </div>
+            <p id="confidenceText" class="text-lg font-bold text-slate-100">87%</p>
+          </div>
+          <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-400 mb-1">
+              <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> AI Trigger
+            </div>
+            <p id="reasonText" class="text-xs font-semibold text-slate-200 truncate">Screen Analysis</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: STATISTICS -->
+      <div class="glass-card p-5 rounded-3xl space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800/80 pb-3">
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-400"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider">Статистика за сегодня</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="statDate" class="text-[10px] text-slate-500 font-mono">00.00.0000</span>
+            <button onclick="resetStats()" title="Сбросить статистику" class="p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all text-[10px] font-bold flex items-center gap-1">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Сброс</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/90 space-y-3">
+          <div class="flex justify-between items-end">
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Текущий Winrate</p>
+              <p id="winrateDisplay" class="text-3xl font-black bg-gradient-to-r from-emerald-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent">0%</p>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Прогресс цели</p>
+              <p class="text-xs font-bold text-slate-200"><span id="statTotal">0</span> / <span id="statGoal">0</span></p>
+            </div>
+          </div>
+
+          <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden p-0.5 border border-white/5">
+            <div id="goalProgressBar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="addResult('plus')" class="py-3.5 px-4 rounded-2xl font-bold text-xs tracking-wider transition-all active:scale-95 bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            ПЛЮС (+1)
+          </button>
+          <button onclick="addResult('minus')" class="py-3.5 px-4 rounded-2xl font-bold text-xs tracking-wider transition-all active:scale-95 bg-rose-500/15 border border-rose-500/40 text-rose-400 hover:bg-rose-500/25 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+            <i data-lucide="minus-circle" class="w-4 h-4"></i>
+            МИНУС (-1)
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
+            <p class="text-[10px] font-semibold text-slate-400">Плюсы</p>
+            <p id="statPlus" class="text-sm font-bold text-emerald-400">0</p>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
+            <p class="text-[10px] font-semibold text-slate-400">Минусы</p>
+            <p id="statMinus" class="text-sm font-bold text-rose-400">0</p>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
+            <p class="text-[10px] font-semibold text-slate-400">Всего</p>
+            <p id="statCountCard" class="text-sm font-bold text-slate-200">0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Block -->
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <div class="flex items-center gap-2 text-slate-300 border-b border-slate-800/80 pb-2.5">
+          <i data-lucide="history" class="w-4 h-4 text-blue-400"></i>
+          <h3 class="text-xs font-bold uppercase tracking-wider">История сигналов</h3>
+        </div>
+        <div id="historyList" class="space-y-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+          <p id="emptyHistory" class="text-xs text-center text-slate-500 py-4">История пуста</p>
+        </div>
+      </div>
+
+      <!-- SECTION: PAST ARCHIVE -->
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <div class="flex items-center gap-2 text-slate-300 border-b border-slate-800/80 pb-2.5">
+          <i data-lucide="archive" class="w-4 h-4 text-cyan-400"></i>
+          <h3 class="text-xs font-bold uppercase tracking-wider">Архив прошлых дней</h3>
+        </div>
+        <div id="archiveList" class="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+          <p id="emptyArchive" class="text-xs text-center text-slate-500 py-3">Прошлых записей пока нет</p>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- TAB 3: PLANNER SECTION -->
+    <section id="section-planner" class="tab-content space-y-4 hidden">
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="calendar" class="w-4 h-4 text-blue-400"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider">Календарь и План на день</h3>
+          </div>
+          <span id="plannerTodayText" class="text-xs text-blue-400 font-bold"></span>
+        </div>
+        
+        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Таймер сессии</p>
+            <p id="plannerTimerDisplay" class="text-2xl font-black text-cyan-400 font-mono">00:00:00</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="timerToggleBtn" onclick="togglePlannerTimer()" class="p-2.5 rounded-xl bg-blue-600/20 border border-blue-500/40 text-blue-300 font-bold text-xs flex items-center gap-1 hover:bg-blue-600/30">
+              <i data-lucide="play" id="timerIcon" class="w-4 h-4"></i>
+            </button>
+            <button onclick="resetPlannerTimer()" class="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold text-xs flex items-center gap-1 hover:bg-rose-500/30">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 rounded-3xl space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Новая задача</h3>
+        <div class="flex gap-2">
+          <input type="text" id="newTaskInput" placeholder="Введите задачу..." class="flex-1 bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
+          <button onclick="addPlannerTask()" class="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all active:scale-95 flex items-center gap-1">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Список задач</h3>
+        <div id="plannerTaskList" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+          <p class="text-xs text-slate-500 text-center py-4">Задач пока нет</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: GOALS SECTION -->
+    <section id="section-goals" class="tab-content space-y-4 hidden">
+      <div class="glass-card p-5 rounded-3xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="target" class="w-5 h-5 text-indigo-400"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider">Отслеживание целей</h3>
+          </div>
+          <button onclick="addGoalPrompt()" class="px-3 py-1.5 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-bold text-xs flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Добавить
+          </button>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-300">Дневные цели</span>
+            <span id="dailyGoalsPercent" class="text-indigo-400 font-bold">0%</span>
+          </div>
+          <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-white/5">
+            <div id="dailyGoalsBar" class="bg-gradient-to-r from-indigo-500 to-blue-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-300">Недельные цели</span>
+            <span id="weeklyGoalsPercent" class="text-cyan-400 font-bold">0%</span>
+          </div>
+          <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-white/5">
+            <div id="weeklyGoalsBar" class="bg-gradient-to-r from-cyan-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-300">Месячные цели</span>
+            <span id="monthlyGoalsPercent" class="text-emerald-400 font-bold">0%</span>
+          </div>
+          <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-white/5">
+            <div id="monthlyGoalsBar" class="bg-gradient-to-r from-emerald-500 to-green-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Все цели</h3>
+        <div id="goalsList" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+          <p class="text-xs text-slate-500 text-center py-4">Целей пока нет</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: RECOVERY SECTION -->
+    <section id="section-recovery" class="tab-content space-y-4 hidden">
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="heart-pulse" class="w-5 h-5 text-rose-400"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider">Восстановление и Отдых</h3>
+          </div>
+        </div>
+        <p class="text-xs text-slate-400">Упражнения для снятия напряжения во время торговых сессий.</p>
+      </div>
+
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Рекомендуемые упражнения</h3>
+        
+        <div id="exerciseList" class="space-y-2">
+          <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <button onclick="toggleExercise(this)" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">
+                <i data-lucide="circle" class="w-5 h-5"></i>
+              </button>
+              <div>
+                <p class="text-xs font-bold text-slate-200">Гимнастика для глаз (2 мин)</p>
+                <p class="text-[10px] text-slate-400">Фокус вдали и вблизи, круговые вращения</p>
+              </div>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <button onclick="toggleExercise(this)" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">
+                <i data-lucide="circle" class="w-5 h-5"></i>
+              </button>
+              <div>
+                <p class="text-xs font-bold text-slate-200">Дыхательная техника 4-7-8</p>
+                <p class="text-[10px] text-slate-400">Снижает пульс и стресс при неудачах</p>
+              </div>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <button onclick="toggleExercise(this)" class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors">
+                <i data-lucide="circle" class="w-5 h-5"></i>
+              </button>
+              <div>
+                <p class="text-xs font-bold text-slate-200">Разминка шеи и плеч</p>
+                <p class="text-[10px] text-slate-400">Улучшает кровообращение головы</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800/80 pb-2">Заметки по самочувствию</h3>
+        <textarea id="recoveryNotes" oninput="saveRecoveryNotes()" rows="3" placeholder="Запишите ваши мысли, уровень усталости или результаты..." class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500 custom-scrollbar"></textarea>
+      </div>
+    </section>
+
+    <!-- TAB 6: PILLS SECTION -->
+    <section id="section-pills" class="tab-content space-y-4 hidden">
+      <div class="glass-card p-5 rounded-3xl space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="pill" class="w-5 h-5 text-emerald-400"></i>
+            <h3 class="text-xs font-bold uppercase tracking-wider">Приём лекарств</h3>
+          </div>
+          <span id="pillsTodayText" class="text-xs text-emerald-400 font-bold font-mono"></span>
+        </div>
+        <p class="text-xs text-slate-400">Ежедневный график и статус приема препаратов.</p>
+      </div>
+
+      <div class="space-y-3">
+        <div id="card-brufen" class="glass-card p-4 rounded-2xl space-y-3 transition-all border border-slate-800">
+          <div class="flex items-center justify-between">
+            <div>
+   
