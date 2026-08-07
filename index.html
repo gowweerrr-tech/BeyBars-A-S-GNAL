@@ -666,6 +666,7 @@
       goal: 0,
       plus: 0,
       minus: 0,
+      lastDate: "",
       history: [],
       archive: {},
       tasks: [],
@@ -682,6 +683,7 @@
     // DOM Ready Initialization
     document.addEventListener("DOMContentLoaded", () => {
       loadState();
+      checkDailyReset();
       initDateDisplays();
       renderPairsList();
       updateUI();
@@ -703,8 +705,39 @@
       }
     }
 
-    function initDateDisplays() {
+    function checkDailyReset() {
       const today = new Date().toLocaleDateString("ru-RU");
+      
+      if (!state.lastDate) {
+        state.lastDate = today;
+      } else if (state.lastDate !== today) {
+        // Archive yesterday's data if there were trades
+        const totalTrades = state.plus + state.minus;
+        if (totalTrades > 0) {
+          if (!state.archive) state.archive = {};
+          const winrate = Math.round((state.plus / totalTrades) * 100);
+          state.archive[state.lastDate] = {
+            plus: state.plus,
+            minus: state.minus,
+            total: totalTrades,
+            goal: state.goal,
+            winrate: winrate
+          };
+        }
+
+        // Reset daily stats & state
+        state.plus = 0;
+        state.minus = 0;
+        state.goal = 0;
+        state.pills = {};
+        state.lastDate = today;
+      }
+      
+      saveState();
+    }
+
+    function initDateDisplays() {
+      const today = state.lastDate || new Date().toLocaleDateString("ru-RU");
       document.getElementById("statDate").innerText = today;
       document.getElementById("plannerTodayText").innerText = today;
       document.getElementById("pillsTodayText").innerText = today;
@@ -902,7 +935,7 @@
     }
 
     function resetStats() {
-      if (confirm("Сбросить текущую статистику сессии?")) {
+      if (confirm("Вы уверены, что хотите сбросить статистику?")) {
         state.plus = 0;
         state.minus = 0;
         saveState();
@@ -967,9 +1000,38 @@
         `).join("");
       }
 
+      renderArchive();
       renderTasks();
       renderGoals();
       updatePillsUI();
+    }
+
+    // Past Days Archive Render
+    function renderArchive() {
+      const archiveList = document.getElementById("archiveList");
+      if (!archiveList) return;
+
+      const dates = Object.keys(state.archive || {});
+      if (dates.length === 0) {
+        archiveList.innerHTML = `<p id="emptyArchive" class="text-xs text-center text-slate-500 py-3">Прошлых записей пока нет</p>`;
+        return;
+      }
+
+      archiveList.innerHTML = dates.reverse().map(dateKey => {
+        const item = state.archive[dateKey];
+        return `
+          <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-1 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-slate-200 font-mono">${dateKey}</span>
+              <span class="font-bold text-blue-400">Winrate: ${item.winrate}%</span>
+            </div>
+            <div class="flex justify-between items-center text-[11px] text-slate-400">
+              <span>Сделок: <strong class="text-slate-200">${item.total}</strong> / ${item.goal || 0}</span>
+              <span><span class="text-emerald-400">+${item.plus}</span> / <span class="text-rose-400">-${item.minus}</span></span>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
     // Planner Timer
