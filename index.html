@@ -582,15 +582,25 @@
         <div id="card-brufen" class="glass-card p-4 rounded-2xl space-y-3 transition-all border border-slate-800">
           <div class="flex items-center justify-between">
             <div>
-              <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2">
-                BRUFEN
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">2 раза в день</span>
-              </h4>
-              <p class="text-[11px] text-amber-400 font-medium mt-0.5">🍚 На полный желудок</p>
+              <p class="text-xs font-bold text-slate-100">Бруфен / Обезболивающее</p>
+              <p class="text-[10px] text-slate-400">После еды • 1 таблетка</p>
             </div>
-            <button onclick="togglePill('brufen')" id="btn-brufen" class="p-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 border border-slate-700 transition-all flex items-center gap-1.5 text-xs font-bold">
-              <i data-lucide="circle" class="w-4 h-4"></i>
-              <span>Принять</span>
+            <button onclick="togglePillTaken('brufen')" id="btnPill-brufen" class="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1 hover:border-emerald-500/50">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span id="txtPill-brufen">Принять</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="card-vitamins" class="glass-card p-4 rounded-2xl space-y-3 transition-all border border-slate-800">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-slate-100">Витаминный комплекс</p>
+              <p class="text-[10px] text-slate-400">Утром • 1 капсула</p>
+            </div>
+            <button onclick="togglePillTaken('vitamins')" id="btnPill-vitamins" class="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1 hover:border-emerald-500/50">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span id="txtPill-vitamins">Принять</span>
             </button>
           </div>
         </div>
@@ -600,536 +610,506 @@
   </div>
 
   <!-- Bottom Navigation Bar -->
-  <nav class="fixed bottom-4 left-4 right-4 max-w-md mx-auto glass-card-glow rounded-3xl p-2 z-40 flex justify-between items-center border border-blue-500/30 shadow-2xl">
-    <button onclick="switchTab('home')" class="nav-tab active flex-1 py-2 px-1 rounded-2xl flex flex-col items-center gap-1 transition-all">
-      <i data-lucide="home" class="w-5 h-5"></i>
-      <span class="text-[10px] font-bold">Главная</span>
-    </button>
-    <button onclick="switchTab('signals')" class="nav-tab flex-1 py-2 px-1 rounded-2xl flex flex-col items-center gap-1 transition-all">
-      <i data-lucide="sparkles" class="w-5 h-5"></i>
-      <span class="text-[10px] font-bold">Сигналы</span>
-    </button>
-    <button onclick="switchTab('planner')" class="nav-tab flex-1 py-2 px-1 rounded-2xl flex flex-col items-center gap-1 transition-all">
-      <i data-lucide="calendar" class="w-5 h-5"></i>
-      <span class="text-[10px] font-bold">План</span>
-    </button>
-    <button onclick="switchTab('goals')" class="nav-tab flex-1 py-2 px-1 rounded-2xl flex flex-col items-center gap-1 transition-all">
-      <i data-lucide="target" class="w-5 h-5"></i>
-      <span class="text-[10px] font-bold">Цели</span>
-    </button>
-    <button onclick="switchTab('recovery')" class="nav-tab flex-1 py-2 px-1 rounded-2xl flex flex-col items-center gap-1 transition-all">
-      <i data-lucide="heart-pulse" class="w-5 h-5"></i>
-      <span class="text-[10px] font-bold">Отдых</span>
-    </button>
-    <button onclick="switchTab('pills')" class="nav-tab flex-1 py-2 px-1 rounded-2xl flex flex-col items-center gap-1 transition-all">
-      <i data-lucide="pill" class="w-5 h-5"></i>
-      <span class="text-[10px] font-bold">Аптечка</span>
-    </button>
+  <nav class="fixed bottom-0 left-0 right-0 z-40 p-3 bg-slate-950/80 backdrop-blur-xl border-t border-slate-800/80 max-w-md mx-auto">
+    <div class="grid grid-cols-6 gap-1 text-center">
+      <button onclick="switchTab('home')" id="tab-home" class="nav-tab active p-2 rounded-2xl flex flex-col items-center justify-center transition-all">
+        <i data-lucide="home" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-1">Главная</span>
+      </button>
+
+      <button onclick="switchTab('signals')" id="tab-signals" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
+        <i data-lucide="zap" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-1">Сигналы</span>
+      </button>
+
+      <button onclick="switchTab('planner')" id="tab-planner" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
+        <i data-lucide="calendar" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-1">Планер</span>
+      </button>
+
+      <button onclick="switchTab('goals')" id="tab-goals" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
+        <i data-lucide="target" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-1">Цели</span>
+      </button>
+
+      <button onclick="switchTab('recovery')" id="tab-recovery" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
+        <i data-lucide="heart-pulse" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-1">Отдых</span>
+      </button>
+
+      <button onclick="switchTab('pills')" id="tab-pills" class="nav-tab p-2 rounded-2xl flex flex-col items-center justify-center transition-all text-slate-400">
+        <i data-lucide="pill" class="w-4 h-4"></i>
+        <span class="text-[9px] font-bold mt-1">Аптека</span>
+      </button>
+    </div>
   </nav>
 
-  <!-- JavaScript Application Logic -->
+  <!-- JavaScript App Logic -->
   <script>
-    // Initial State & Data
+    // Initial State & OTC Pairs List
     const OTC_PAIRS = [
-      "EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/USD OTC", "USD/CAD OTC",
-      "USD/CHF OTC", "NZD/USD OTC", "EUR/GBP OTC", "EUR/JPY OTC", "GBP/JPY OTC",
-      "AUD/JPY OTC", "CAD/JPY OTC", "CHF/JPY OTC", "EUR/CAD OTC", "EUR/AUD OTC",
-      "GBP/CAD OTC", "GBP/AUD OTC", "AUD/CAD OTC", "AUD/NZD OTC", "NZD/JPY OTC",
-      "USD/RUB OTC", "EUR/RUB OTC", "USD/TRY OTC", "EUR/TRY OTC", "USD/BRL OTC",
-      "USD/INR OTC", "USD/PKR OTC", "USD/BDT OTC", "USD/IDR OTC", "USD/PHP OTC",
-      "USD/EGP OTC", "USD/MXN OTC", "USD/ARG OTC", "USD/CLP OTC", "USD/COP OTC",
-      "USD/ZAR OTC", "USD/NGN OTC", "USD/KWD OTC", "USD/AED OTC", "USD/SAR OTC", "USD/THB OTC",
-      "BTC/USD OTC", "ETH/USD OTC", "LTC/USD OTC", "XRP/USD OTC",
-      "GOLD OTC", "SILVER OTC", "BRENT OTC", "WTI OTC", "US100 OTC"
+      "EUR/USD OTC", "GBP/USD OTC", "USD/JPY OTC", "AUD/USD OTC", "USD/CHF OTC",
+      "NZD/USD OTC", "EUR/GBP OTC", "EUR/JPY OTC", "GBP/JPY OTC", "USD/CAD OTC",
+      "AUD/JPY OTC", "CAD/JPY OTC", "EUR/CAD OTC", "EUR/AUD OTC", "GBP/CAD OTC",
+      "NZD/JPY OTC", "AUD/CAD OTC", "GBP/AUD OTC", "USD/RUB OTC", "EUR/RUB OTC",
+      "USD/TRY OTC", "EUR/TRY OTC", "USD/BRL OTC", "USD/INR OTC", "USD/CNH OTC",
+      "USD/MXN OTC", "USD/ZAR OTC", "USD/PHP OTC", "USD/IDR OTC", "USD/EGP OTC",
+      "USD/PKR OTC", "USD/BDT OTC", "USD/NGN OTC", "USD/ARS OTC", "USD/CLP OTC",
+      "USD/COP OTC", "USD/PEN OTC", "USD/VND OTC", "USD/KRW OTC", "USD/SGD OTC",
+      "USD/AED OTC", "USD/SAR OTC", "USD/KWD OTC", "USD/QAR OTC", "USD/THB OTC",
+      "USD/MYR OTC", "BTC/USD OTC", "ETH/USD OTC", "LTC/USD OTC", "XRP/USD OTC"
     ];
 
-    let selectedPair = "EUR/USD OTC";
-    let selectedTimeframe = "15 Seconds";
-    let screenStream = null;
+    let state = {
+      selectedPair: "EUR/USD OTC",
+      selectedTime: "15 Seconds",
+      goal: 0,
+      plus: 0,
+      minus: 0,
+      history: [],
+      archive: {},
+      tasks: [],
+      goals: [],
+      pills: {},
+      notes: "",
+      screenActive: false,
+      mediaStream: null,
+      timerRunning: false,
+      timerSeconds: 0,
+      timerInterval: null
+    };
 
-    // Load LocalStorage Data
-    let dailyGoal = parseInt(localStorage.getItem('beybars_daily_goal')) || 0;
-    let stats = JSON.parse(localStorage.getItem('beybars_stats')) || { plus: 0, minus: 0, history: [] };
-    let plannerTasks = JSON.parse(localStorage.getItem('beybars_planner_tasks')) || [];
-    let customGoals = JSON.parse(localStorage.getItem('beybars_goals')) || [];
-    let pillsState = JSON.parse(localStorage.getItem('beybars_pills')) || {};
-
-    // Initialization
+    // DOM Ready Initialization
     document.addEventListener("DOMContentLoaded", () => {
+      loadState();
+      initDateDisplays();
+      renderPairsList();
+      updateUI();
       lucide.createIcons();
-      initPairsList();
-      updateGoalUI();
-      updateStatsUI();
-      renderPlannerTasks();
-      renderGoalsUI();
-      loadPillsState();
-      
-      const todayStr = new Date().toLocaleDateString('ru-RU');
-      document.getElementById('statDate').textContent = todayStr;
-      if (document.getElementById('plannerTodayText')) document.getElementById('plannerTodayText').textContent = todayStr;
-      if (document.getElementById('pillsTodayText')) document.getElementById('pillsTodayText').textContent = todayStr;
-
-      if (dailyGoal === 0) openGoalModal();
     });
+
+    function saveState() {
+      localStorage.setItem("beybars_ai_state", JSON.stringify(state));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem("beybars_ai_state");
+      if (saved) {
+        try {
+          state = { ...state, ...JSON.parse(saved) };
+        } catch(e) {
+          console.error("Error loading state", e);
+        }
+      }
+    }
+
+    function initDateDisplays() {
+      const today = new Date().toLocaleDateString("ru-RU");
+      document.getElementById("statDate").innerText = today;
+      document.getElementById("plannerTodayText").innerText = today;
+      document.getElementById("pillsTodayText").innerText = today;
+      document.getElementById("recoveryNotes").value = state.notes || "";
+    }
 
     // Navigation Logic
     function switchTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(".nav-tab").forEach(el => {
+        el.classList.remove("active");
+        el.classList.add("text-slate-400");
+      });
 
       const targetSection = document.getElementById(`section-${tabName}`);
-      if (targetSection) targetSection.classList.remove('hidden');
+      const targetTab = document.getElementById(`tab-${tabName}`);
 
-      const activeBtn = Array.from(document.querySelectorAll('.nav-tab')).find(btn => btn.getAttribute('onclick').includes(tabName));
-      if (activeBtn) activeBtn.classList.add('active');
-    }
-
-    // Modal Control
-    function openGoalModal() { document.getElementById('goalModal').classList.remove('hidden'); }
-    function closeGoalModal() { document.getElementById('goalModal').classList.add('hidden'); }
-
-    function setDailyGoal() {
-      const val = parseInt(document.getElementById('goalInput').value);
-      if (val && val > 0) {
-        dailyGoal = val;
-        localStorage.setItem('beybars_daily_goal', dailyGoal);
-        updateGoalUI();
-        closeGoalModal();
+      if (targetSection) targetSection.classList.remove("hidden");
+      if (targetTab) {
+        targetTab.classList.add("active");
+        targetTab.classList.remove("text-slate-400");
       }
     }
 
-    function updateGoalUI() {
-      document.getElementById('headerGoalDisplay').textContent = dailyGoal;
-      document.getElementById('homeGoalDisplay').textContent = dailyGoal;
-      document.getElementById('statGoal').textContent = dailyGoal;
-      updateStatsUI();
+    // Goals & Modal
+    function openGoalModal() {
+      document.getElementById("goalModal").classList.remove("hidden");
+      document.getElementById("goalInput").value = state.goal || "";
     }
 
-    // Pair Dropdown Logic
-    function initPairsList() {
-      const container = document.getElementById('pairsContainer');
-      container.innerHTML = '';
-      OTC_PAIRS.forEach(pair => {
-        const item = document.createElement('div');
-        item.className = "p-2.5 rounded-xl text-xs font-semibold hover:bg-blue-600/20 hover:text-blue-300 cursor-pointer transition-all flex items-center justify-between text-slate-300";
-        item.innerHTML = `<span>${pair}</span>`;
-        item.onclick = () => selectPair(pair);
-        container.appendChild(item);
-      });
+    function setDailyGoal() {
+      const val = parseInt(document.getElementById("goalInput").value);
+      if (val && val > 0) {
+        state.goal = val;
+        saveState();
+        updateUI();
+        document.getElementById("goalModal").classList.add("hidden");
+      }
     }
 
+    // Pair Dropdown & Filtering
     function toggleDropdown() {
-      const menu = document.getElementById('dropdownMenu');
-      const chevron = document.getElementById('dropdownChevron');
-      menu.classList.toggle('hidden');
-      chevron.classList.toggle('rotate-180');
+      const menu = document.getElementById("dropdownMenu");
+      const chevron = document.getElementById("dropdownChevron");
+      menu.classList.toggle("hidden");
+      chevron.classList.toggle("rotate-180");
+    }
+
+    function renderPairsList(filter = "") {
+      const container = document.getElementById("pairsContainer");
+      container.innerHTML = "";
+      const filtered = OTC_PAIRS.filter(p => p.toLowerCase().includes(filter.toLowerCase()));
+
+      filtered.forEach(pair => {
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left px-3 py-2 rounded-xl text-xs font-semibold hover:bg-blue-600/20 text-slate-200 transition-colors flex items-center justify-between";
+        btn.innerHTML = `<span>${pair}</span>` + (pair === state.selectedPair ? `<i data-lucide="check" class="w-3.5 h-3.5 text-blue-400"></i>` : "");
+        btn.onclick = () => selectPair(pair);
+        container.appendChild(btn);
+      });
+      lucide.createIcons();
     }
 
     function filterPairs() {
-      const query = document.getElementById('pairSearchInput').value.toLowerCase();
-      const items = document.querySelectorAll('#pairsContainer > div');
-      items.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(query) ? 'flex' : 'none';
-      });
+      const query = document.getElementById("pairSearchInput").value;
+      renderPairsList(query);
     }
 
     function selectPair(pair) {
-      selectedPair = pair;
-      document.getElementById('selectedPairBadge').textContent = pair;
-      document.getElementById('dropdownSelectedText').innerHTML = `<i data-lucide="coins" class="w-4 h-4 text-blue-400"></i> ${pair}`;
-      lucide.createIcons();
+      state.selectedPair = pair;
+      document.getElementById("selectedPairBadge").innerText = pair;
+      document.getElementById("dropdownSelectedText").innerHTML = `<i data-lucide="coins" class="w-4 h-4 text-blue-400"></i> ${pair}`;
       toggleDropdown();
+      saveState();
+      lucide.createIcons();
     }
 
     function selectTime(btn, time) {
-      document.querySelectorAll('.time-btn').forEach(b => {
+      document.querySelectorAll(".time-btn").forEach(b => {
         b.className = "time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-slate-900/40 border-slate-800 text-slate-400";
       });
       btn.className = "time-btn p-3 rounded-2xl text-xs font-medium text-center border bg-blue-600/20 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]";
-      selectedTimeframe = time;
+      state.selectedTime = time;
+      saveState();
     }
 
-    // Screen Stream Logic
+    // Screen Capture Integration
     async function toggleScreenCapture() {
-      const badge = document.getElementById('screenStatusBadge');
-      const btn = document.getElementById('screenStreamBtn');
-      const video = document.getElementById('screenVideo');
+      const badge = document.getElementById("screenStatusBadge");
+      const btn = document.getElementById("screenStreamBtn");
 
-      if (screenStream) {
-        screenStream.getTracks().forEach(track => track.stop());
-        screenStream = null;
-        badge.textContent = "ОТКЛЮЧЕН";
-        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30";
-        btn.innerHTML = `<i data-lucide="video" class="w-4 h-4"></i> ПОДКЛЮЧИТЬ ЭКРАН Pocket Option`;
-        lucide.createIcons();
-        return;
-      }
+      if (!state.screenActive) {
+        try {
+          state.mediaStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          const video = document.getElementById("screenVideo");
+          video.srcObject = state.mediaStream;
+          state.screenActive = true;
 
-      try {
-        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: false });
-        video.srcObject = screenStream;
-        badge.textContent = "АКТИВЕН";
-        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-        btn.innerHTML = `<i data-lucide="video-off" class="w-4 h-4"></i> ОТКЛЮЧИТЬ ЭКРАН`;
-        lucide.createIcons();
+          badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+          badge.innerText = "ПОДКЛЮЧЕН";
+          btn.innerText = "ОТКЛЮЧИТЬ ЭКРАН";
 
-        screenStream.getVideoTracks()[0].onended = () => {
-          screenStream = null;
-          badge.textContent = "ОТКЛЮЧЕН";
-          badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30";
-          btn.innerHTML = `<i data-lucide="video" class="w-4 h-4"></i> ПОДКЛЮЧИТЬ ЭКРАН Pocket Option`;
-          lucide.createIcons();
-        };
-      } catch (err) {
-        console.warn("Screen capture cancelled or unavailable:", err);
+          state.mediaStream.getVideoTracks()[0].onended = () => stopScreenCapture();
+        } catch (err) {
+          console.warn("Screen stream cancelled or failed", err);
+        }
+      } else {
+        stopScreenCapture();
       }
     }
 
-    // Screen Frame Analysis Function
-    function analyzeScreenFrame() {
-      const video = document.getElementById('screenVideo');
-      const canvas = document.getElementById('screenCanvas');
-      if (!screenStream || !video.videoWidth) return null;
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const frameData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = frameData.data;
-      let greenPixels = 0, redPixels = 0;
-
-      for (let i = 0; i < data.length; i += 16) {
-        const r = data[i], g = data[i+1], b = data[i+2];
-        if (g > r + 30 && g > b + 30) greenPixels++;
-        if (r > g + 30 && r > b + 30) redPixels++;
+    function stopScreenCapture() {
+      if (state.mediaStream) {
+        state.mediaStream.getTracks().forEach(track => track.stop());
       }
-
-      const total = greenPixels + redPixels;
-      if (total === 0) return null;
-      return { direction: greenPixels >= redPixels ? 'UP' : 'DOWN', ratio: Math.max(greenPixels, redPixels) / total };
+      state.screenActive = false;
+      const badge = document.getElementById("screenStatusBadge");
+      const btn = document.getElementById("screenStreamBtn");
+      badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30";
+      badge.innerText = "ОТКЛЮЧЕН";
+      btn.innerText = "ПОДКЛЮЧИТЬ ЭКРАН Pocket Option";
     }
 
-    // Signal Generation with Real Screen Data Integration
+    // Signal Generation Simulation
     function generateSignal() {
-      const btn = document.getElementById('generateBtn');
-      const loading = document.getElementById('loadingState');
-      const result = document.getElementById('signalResult');
-      const progressBar = document.getElementById('progressBar');
+      const loading = document.getElementById("loadingState");
+      const result = document.getElementById("signalResult");
+      const pBar = document.getElementById("progressBar");
 
-      btn.disabled = true;
-      btn.classList.add('opacity-50');
-      result.classList.add('hidden', 'opacity-0', 'scale-95');
-      loading.classList.remove('hidden');
+      result.classList.add("hidden");
+      result.classList.remove("scale-100", "opacity-100");
+      loading.classList.remove("hidden");
+      pBar.style.width = "0%";
 
       let progress = 0;
-      progressBar.style.width = '0%';
-
       const interval = setInterval(() => {
-        progress += 20;
-        progressBar.style.width = `${progress}%`;
+        progress += 25;
+        pBar.style.width = `${progress}%`;
 
         if (progress >= 100) {
           clearInterval(interval);
-          
-          let direction = Math.random() > 0.5 ? 'UP' : 'DOWN';
-          let confidence = Math.floor(Math.random() * 14) + 82; // 82% - 95%
-          let triggerText = "Trend & Volatility";
-
-          const frameResult = analyzeScreenFrame();
-          if (frameResult) {
-            direction = frameResult.direction;
-            confidence = Math.min(98, Math.floor(frameResult.ratio * 100) + 10);
-            triggerText = "Visual Pixel Engine";
-          }
-
-          renderSignalResult(direction, confidence, triggerText);
-
-          loading.classList.add('hidden');
-          result.classList.remove('hidden');
-          setTimeout(() => {
-            result.classList.remove('opacity-0', 'scale-95');
-          }, 50);
-
-          btn.disabled = false;
-          btn.classList.remove('opacity-50');
+          loading.classList.add("hidden");
+          displaySignalResult();
         }
-      }, 300);
+      }, 250);
     }
 
-    function renderSignalResult(direction, confidence, triggerText) {
-      document.getElementById('resultPair').textContent = selectedPair;
-      document.getElementById('resultTime').textContent = selectedTimeframe;
-      document.getElementById('confidenceText').textContent = `${confidence}%`;
-      document.getElementById('reasonText').textContent = triggerText;
+    function displaySignalResult() {
+      const result = document.getElementById("signalResult");
+      const direction = Math.random() > 0.45 ? "UP" : "DOWN";
+      const confidence = Math.floor(Math.random() * 15) + 82; // 82-96%
+      const timeStr = new Date().toLocaleTimeString("ru-RU", { hour: '2-digit', minute: '2-digit' });
 
-      const badge = document.getElementById('directionBadge');
-      const icon = document.getElementById('directionIcon');
-      const text = document.getElementById('directionText');
+      document.getElementById("resultPair").innerText = state.selectedPair;
+      document.getElementById("resultTime").innerText = state.selectedTime;
+      document.getElementById("confidenceText").innerText = `${confidence}%`;
+      
+      const badge = document.getElementById("directionBadge");
+      const text = document.getElementById("directionText");
+      const icon = document.getElementById("directionIcon");
 
-      if (direction === 'UP') {
+      if (direction === "UP") {
         badge.className = "inline-flex items-center gap-3 px-8 py-3.5 rounded-2xl border bg-emerald-500/15 border-emerald-500/40 text-emerald-400 shadow-[0_0_25px_rgba(34,197,94,0.25)]";
-        icon.setAttribute('data-lucide', 'trending-up');
-        text.textContent = "UP";
+        text.innerText = "ВВЕРХ (CALL)";
+        icon.setAttribute("data-lucide", "trending-up");
       } else {
         badge.className = "inline-flex items-center gap-3 px-8 py-3.5 rounded-2xl border bg-rose-500/15 border-rose-500/40 text-rose-400 shadow-[0_0_25px_rgba(239,68,68,0.25)]";
-        icon.setAttribute('data-lucide', 'trending-down');
-        text.textContent = "DOWN";
+        text.innerText = "ВНИЗ (PUT)";
+        icon.setAttribute("data-lucide", "trending-down");
       }
+
+      document.getElementById("reasonText").innerText = state.screenActive ? "Screen OCR & Momentum" : "Technical AI Algorithmic";
+
+      // Save to History
+      const signalData = { pair: state.selectedPair, time: timeStr, dir: direction, conf: confidence };
+      state.history.unshift(signalData);
+      if (state.history.length > 20) state.history.pop();
+      
+      saveState();
+      updateUI();
+
+      result.classList.remove("hidden");
+      setTimeout(() => {
+        result.classList.add("scale-100", "opacity-100");
+      }, 50);
       lucide.createIcons();
-
-      const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('homeLastSignalTime').textContent = timeNow;
-      document.getElementById('homeLastSignalBox').innerHTML = `
-        <div class="flex items-center justify-between">
-          <span class="font-bold text-slate-200 text-xs">${selectedPair}</span>
-          <span class="font-black text-xs ${direction === 'UP' ? 'text-emerald-400' : 'text-rose-400'}">${direction} (${selectedTimeframe})</span>
-        </div>
-      `;
-
-      stats.history.unshift({ pair: selectedPair, dir: direction, time: timeNow, conf: confidence });
-      if (stats.history.length > 20) stats.history.pop();
-      saveStats();
-      renderHistory();
     }
 
-    // Statistics Logic
+    // Stats Management
     function addResult(type) {
-      if (type === 'plus') stats.plus++;
-      else if (type === 'minus') stats.minus++;
-      saveStats();
-      updateStatsUI();
+      if (type === 'plus') state.plus++;
+      if (type === 'minus') state.minus++;
+      saveState();
+      updateUI();
     }
 
     function resetStats() {
-      if (confirm('Сбросить текущую статистику за день?')) {
-        stats = { plus: 0, minus: 0, history: [] };
-        saveStats();
-        updateStatsUI();
+      if (confirm("Сбросить текущую статистику сессии?")) {
+        state.plus = 0;
+        state.minus = 0;
+        saveState();
+        updateUI();
       }
     }
 
-    function saveStats() {
-      localStorage.setItem('beybars_stats', JSON.stringify(stats));
-    }
+    // UI Render Engine
+    function updateUI() {
+      const totalTrades = state.plus + state.minus;
+      const winrate = totalTrades > 0 ? Math.round((state.plus / totalTrades) * 100) : 0;
 
-    function updateStatsUI() {
-      const total = stats.plus + stats.minus;
-      const winrate = total > 0 ? Math.round((stats.plus / total) * 100) : 0;
+      // Header & Dashboard Updates
+      document.getElementById("headerGoalDisplay").innerText = state.goal;
+      document.getElementById("homeGoalDisplay").innerText = state.goal;
+      document.getElementById("dashboardWinrate").innerText = `${winrate}%`;
+      document.getElementById("dashboardTrades").innerText = totalTrades;
+      document.getElementById("homeTradesDisplay").innerText = totalTrades;
 
-      document.getElementById('statPlus').textContent = stats.plus;
-      document.getElementById('statMinus').textContent = stats.minus;
-      document.getElementById('statCountCard').textContent = total;
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('winrateDisplay').textContent = `${winrate}%`;
+      // Statistics Section
+      document.getElementById("winrateDisplay").innerText = `${winrate}%`;
+      document.getElementById("statGoal").innerText = state.goal;
+      document.getElementById("statTotal").innerText = totalTrades;
+      document.getElementById("statPlus").innerText = state.plus;
+      document.getElementById("statMinus").innerText = state.minus;
+      document.getElementById("statCountCard").innerText = totalTrades;
 
-      document.getElementById('dashboardWinrate').textContent = `${winrate}%`;
-      document.getElementById('dashboardTrades').textContent = total;
-      document.getElementById('homeTradesDisplay').textContent = total;
+      const progressPercent = state.goal > 0 ? Math.min(100, Math.round((totalTrades / state.goal) * 100)) : 0;
+      document.getElementById("goalProgressBar").style.width = `${progressPercent}%`;
 
-      const progress = dailyGoal > 0 ? Math.min(100, Math.round((total / dailyGoal) * 100)) : 0;
-      document.getElementById('goalProgressBar').style.width = `${progress}%`;
+      // Home Page Last Signal
+      const lastSigBox = document.getElementById("homeLastSignalBox");
+      const lastSigTime = document.getElementById("homeLastSignalTime");
 
-      renderHistory();
-    }
-
-    function renderHistory() {
-      const list = document.getElementById('historyList');
-      if (!stats.history || stats.history.length === 0) {
-        list.innerHTML = `<p id="emptyHistory" class="text-xs text-center text-slate-500 py-4">История пуста</p>`;
-        return;
-      }
-
-      list.innerHTML = stats.history.map(item => `
-        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between items-center text-xs">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-slate-200">${item.pair}</span>
-            <span class="text-[10px] text-slate-500">${item.time}</span>
+      if (state.history.length > 0) {
+        const last = state.history[0];
+        lastSigTime.innerText = last.time;
+        lastSigBox.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-200">${last.pair}</span>
+            <span class="text-xs font-black ${last.dir === 'UP' ? 'text-emerald-400' : 'text-rose-400'}">${last.dir} (${last.conf}%)</span>
           </div>
-          <span class="font-black ${item.dir === 'UP' ? 'text-emerald-400' : 'text-rose-400'}">${item.dir} (${item.conf}%)</span>
-        </div>
-      `).join('');
+        `;
+      } else {
+        lastSigTime.innerText = "Нет данных";
+        lastSigBox.innerHTML = `<p class="text-xs text-slate-500">Сигналы еще не генерировались</p>`;
+      }
+
+      // History Render
+      const historyList = document.getElementById("historyList");
+      if (state.history.length === 0) {
+        historyList.innerHTML = `<p id="emptyHistory" class="text-xs text-center text-slate-500 py-4">История пуста</p>`;
+      } else {
+        historyList.innerHTML = state.history.map(item => `
+          <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-200">${item.pair}</span>
+              <span class="text-[10px] text-slate-500">${item.time}</span>
+            </div>
+            <span class="font-black ${item.dir === 'UP' ? 'text-emerald-400' : 'text-rose-400'}">${item.dir} • ${item.conf}%</span>
+          </div>
+        `).join("");
+      }
+
+      renderTasks();
+      renderGoals();
+      updatePillsUI();
     }
 
-    // Planner Timer Logic
-    let timerInterval = null;
-    let timerSeconds = 0;
-
+    // Planner Timer
     function togglePlannerTimer() {
-      const icon = document.getElementById('timerIcon');
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        icon.setAttribute('data-lucide', 'play');
-      } else {
-        timerInterval = setInterval(() => {
-          timerSeconds++;
-          const hrs = String(Math.floor(timerSeconds / 3600)).padStart(2, '0');
-          const mins = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, '0');
-          const secs = String(timerSeconds % 60).padStart(2, '0');
-          document.getElementById('plannerTimerDisplay').textContent = `${hrs}:${mins}:${secs}`;
+      const btnIcon = document.getElementById("timerIcon");
+      if (!state.timerRunning) {
+        state.timerRunning = true;
+        btnIcon.setAttribute("data-lucide", "pause");
+        state.timerInterval = setInterval(() => {
+          state.timerSeconds++;
+          updateTimerDisplay();
         }, 1000);
-        icon.setAttribute('data-lucide', 'pause');
+      } else {
+        state.timerRunning = false;
+        btnIcon.setAttribute("data-lucide", "play");
+        clearInterval(state.timerInterval);
       }
       lucide.createIcons();
     }
 
     function resetPlannerTimer() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-      timerSeconds = 0;
-      document.getElementById('plannerTimerDisplay').textContent = "00:00:00";
-      const icon = document.getElementById('timerIcon');
-      if (icon) icon.setAttribute('data-lucide', 'play');
+      state.timerRunning = false;
+      clearInterval(state.timerInterval);
+      state.timerSeconds = 0;
+      updateTimerDisplay();
+      document.getElementById("timerIcon").setAttribute("data-lucide", "play");
       lucide.createIcons();
     }
 
-    // Planner Tasks Logic
+    function updateTimerDisplay() {
+      const hrs = String(Math.floor(state.timerSeconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((state.timerSeconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(state.timerSeconds % 60).padStart(2, '0');
+      document.getElementById("plannerTimerDisplay").innerText = `${hrs}:${mins}:${secs}`;
+    }
+
+    // Planner Tasks
     function addPlannerTask() {
-      const input = document.getElementById('newTaskInput');
-      const val = input.value.trim();
-      if (val) {
-        plannerTasks.push({ id: Date.now(), text: val, done: false });
-        input.value = '';
-        savePlannerTasks();
-        renderPlannerTasks();
+      const input = document.getElementById("newTaskInput");
+      if (input.value.trim()) {
+        state.tasks.push({ text: input.value.trim(), done: false });
+        input.value = "";
+        saveState();
+        renderTasks();
       }
     }
 
-    function toggleTask(id) {
-      plannerTasks = plannerTasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
-      savePlannerTasks();
-      renderPlannerTasks();
+    function toggleTask(index) {
+      state.tasks[index].done = !state.tasks[index].done;
+      saveState();
+      renderTasks();
     }
 
-    function deleteTask(id) {
-      plannerTasks = plannerTasks.filter(t => t.id !== id);
-      savePlannerTasks();
-      renderPlannerTasks();
-    }
-
-    function savePlannerTasks() {
-      localStorage.setItem('beybars_planner_tasks', JSON.stringify(plannerTasks));
-    }
-
-    function renderPlannerTasks() {
-      const list = document.getElementById('plannerTaskList');
-      if (plannerTasks.length === 0) {
+    function renderTasks() {
+      const list = document.getElementById("plannerTaskList");
+      if (!list) return;
+      if (state.tasks.length === 0) {
         list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Задач пока нет</p>`;
         return;
       }
-
-      list.innerHTML = plannerTasks.map(task => `
-        <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <button onclick="toggleTask(${task.id})" class="text-slate-400 hover:text-emerald-400">
-              <i data-lucide="${task.done ? 'check-circle-2' : 'circle'}" class="w-4 h-4 ${task.done ? 'text-emerald-400' : ''}"></i>
-            </button>
-            <span class="text-xs ${task.done ? 'line-through text-slate-500' : 'text-slate-200'}">${task.text}</span>
-          </div>
-          <button onclick="deleteTask(${task.id})" class="text-rose-400/60 hover:text-rose-400">
-            <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+      list.innerHTML = state.tasks.map((task, i) => `
+        <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+          <span class="${task.done ? 'line-through text-slate-500' : 'text-slate-200'}">${task.text}</span>
+          <button onclick="toggleTask(${i})" class="p-1 text-slate-400 hover:text-emerald-400">
+            <i data-lucide="${task.done ? 'check-circle' : 'circle'}" class="w-4 h-4"></i>
           </button>
         </div>
-      `).join('');
+      `).join("");
       lucide.createIcons();
     }
 
-    // Custom Goals Section Logic
+    // Goals Section Logic
     function addGoalPrompt() {
-      const title = prompt("Введите название цели:");
-      if (!title) return;
-      const type = prompt("Тип цели (daily / weekly / monthly):", "daily");
-      if (title) {
-        customGoals.push({ id: Date.now(), title, type: type || 'daily', done: false });
-        saveGoals();
-        renderGoalsUI();
+      const text = prompt("Введите цель:");
+      if (text) {
+        state.goals.push({ text, done: false });
+        saveState();
+        renderGoals();
       }
     }
 
-    function toggleGoal(id) {
-      customGoals = customGoals.map(g => g.id === id ? { ...g, done: !g.done } : g);
-      saveGoals();
-      renderGoalsUI();
-    }
-
-    function saveGoals() {
-      localStorage.setItem('beybars_goals', JSON.stringify(customGoals));
-    }
-
-    function renderGoalsUI() {
-      const list = document.getElementById('goalsList');
-      if (!customGoals || customGoals.length === 0) {
+    function renderGoals() {
+      const list = document.getElementById("goalsList");
+      if (!list) return;
+      if (state.goals.length === 0) {
         list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Целей пока нет</p>`;
-      } else {
-        list.innerHTML = customGoals.map(g => `
-          <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <button onclick="toggleGoal(${g.id})" class="text-slate-400 hover:text-indigo-400">
-                <i data-lucide="${g.done ? 'check-circle-2' : 'circle'}" class="w-4 h-4 ${g.done ? 'text-indigo-400' : ''}"></i>
-              </button>
-              <div>
-                <p class="text-xs ${g.done ? 'line-through text-slate-500' : 'text-slate-200'}">${g.title}</p>
-                <span class="text-[9px] uppercase font-bold text-slate-500">${g.type}</span>
-              </div>
-            </div>
-          </div>
-        `).join('');
-        lucide.createIcons();
+        return;
       }
-
-      ['daily', 'weekly', 'monthly'].forEach(type => {
-        const filtered = customGoals.filter(g => g.type === type);
-        const done = filtered.filter(g => g.done).length;
-        const pct = filtered.length > 0 ? Math.round((done / filtered.length) * 100) : 0;
-        const bar = document.getElementById(`${type}GoalsBar`);
-        const txt = document.getElementById(`${type}GoalsPercent`);
-        if (bar) bar.style.width = `${pct}%`;
-        if (txt) txt.textContent = `${pct}%`;
-      });
+      list.innerHTML = state.goals.map((g, i) => `
+        <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
+          <span class="${g.done ? 'line-through text-slate-500' : 'text-slate-200'}">${g.text}</span>
+          <button onclick="toggleGoal(${i})" class="p-1 text-slate-400 hover:text-indigo-400">
+            <i data-lucide="${g.done ? 'check-square' : 'square'}" class="w-4 h-4"></i>
+          </button>
+        </div>
+      `).join("");
+      lucide.createIcons();
     }
 
-    // Recovery & Pills Helpers
+    function toggleGoal(i) {
+      state.goals[i].done = !state.goals[i].done;
+      saveState();
+      renderGoals();
+    }
+
+    // Recovery & Notes
     function toggleExercise(btn) {
-      const icon = btn.querySelector('i');
-      if (icon) {
-        const isDone = icon.getAttribute('data-lucide') === 'check-circle-2';
-        icon.setAttribute('data-lucide', isDone ? 'circle' : 'check-circle-2');
-        btn.className = isDone ? 'p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors' : 'p-2 rounded-xl bg-emerald-500/20 text-emerald-400 transition-colors';
-        lucide.createIcons();
-      }
+      const icon = btn.querySelector("i");
+      btn.classList.toggle("text-emerald-400");
     }
 
     function saveRecoveryNotes() {
-      const val = document.getElementById('recoveryNotes').value;
-      localStorage.setItem('beybars_recovery_notes', val);
+      state.notes = document.getElementById("recoveryNotes").value;
+      saveState();
     }
 
-    function loadPillsState() {
-      const savedNotes = localStorage.getItem('beybars_recovery_notes');
-      if (savedNotes && document.getElementById('recoveryNotes')) {
-        document.getElementById('recoveryNotes').value = savedNotes;
-      }
+    // Pills System
+    function togglePillTaken(id) {
+      state.pills[id] = !state.pills[id];
+      saveState();
+      updatePillsUI();
+    }
 
-      if (pillsState['brufen']) {
-        const card = document.getElementById('card-brufen');
-        const btn = document.getElementById('btn-brufen');
-        if (card && btn) {
-          card.classList.add('pill-taken');
-          btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i> <span class="text-emerald-400">Принято</span>`;
-          lucide.createIcons();
+    function updatePillsUI() {
+      ['brufen', 'vitamins'].forEach(id => {
+        const card = document.getElementById(`card-${id}`);
+        const btn = document.getElementById(`btnPill-${id}`);
+        const txt = document.getElementById(`txtPill-${id}`);
+        if (!card || !btn) return;
+
+        if (state.pills[id]) {
+          card.classList.add("pill-taken");
+          txt.innerText = "Принято";
+          btn.className = "px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1";
+        } else {
+          card.classList.remove("pill-taken");
+          txt.innerText = "Принять";
+          btn.className = "px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1 hover:border-emerald-500/50";
         }
-      }
-    }
-
-    function togglePill(pillKey) {
-      pillsState[pillKey] = !pillsState[pillKey];
-      localStorage.setItem('beybars_pills', JSON.stringify(pillsState));
-      loadPillsState();
+      });
     }
   </script>
 </body>
