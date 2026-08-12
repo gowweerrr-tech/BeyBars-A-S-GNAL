@@ -1,4 +1,4 @@
-console.log("Trade Result Module Loaded v6");
+console.log("Trade Result Module Loaded");
 
 window.tradeResultState = {
     ready: false,
@@ -25,23 +25,24 @@ function testScreenAccess() {
                 video.videoWidth + " x " + video.videoHeight
             );
             console.log("-----------------------------------------");
-            console.log("Запустите getCurrentPrice() в консоли.");
+            console.log("Запустите debugBadge() для визуальной проверки вырезанной плашки.");
+            console.log("Запустите getCurrentPrice() для распознавания цены.");
         }
     }, 200);
 }
 
-// Захват с масштабированием x3 для идеальной четкости OCR
-function getScaledTestCanvas() {
+// Находим синюю плашку и возвращаем её в чистом (неиспорченном) виде
+function getExactBluePriceCanvas(debugMode = false) {
     const video = document.getElementById("screenVideo");
     if (!video || !window.tradeResultState.ready) return null;
 
     const vWidth = video.videoWidth;
     const vHeight = video.videoHeight;
 
-    // Узкая область оси цен
-    const cropX = Math.floor(vWidth * 0.73);
+    // Правая часть экрана (ось цен)
+    const cropX = Math.floor(vWidth * 0.70);
     const cropY = Math.floor(vHeight * 0.15);
-    const cropW = Math.floor(vWidth * 0.08);
+    const cropW = Math.floor(vWidth * 0.20);
     const cropH = Math.floor(vHeight * 0.70);
 
     const fullCanvas = document.createElement("canvas");
@@ -57,6 +58,7 @@ function getScaledTestCanvas() {
     let maxBlueCount = 0;
     let bestY = -1;
 
+    // Сканируем строки на наличие синей плашки
     for (let y = 0; y < cropH; y++) {
         let blueInRow = 0;
         for (let x = 0; x < cropW; x++) {
@@ -65,7 +67,8 @@ function getScaledTestCanvas() {
             const g = data[idx + 1];
             const b = data[idx + 2];
 
-            if (b > 80 && b > r + 20) {
+            // Ищем насыщенный синий/голубой фон
+            if (b > 100 && b > r + 20) {
                 blueInRow++;
             }
         }
@@ -75,65 +78,60 @@ function getScaledTestCanvas() {
         }
     }
 
-    if (bestY === -1 || maxBlueCount < 3) return null;
-
-    const badgeH = 28;
-    const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
-
-    // Масштабируем в 3 раза для улучшения OCR
-    const scale = 3;
-    const scaledCanvas = document.createElement("canvas");
-    scaledCanvas.width = cropW * scale;
-    scaledCanvas.height = badgeH * scale;
-
-    const sCtx = scaledCanvas.getContext("2d");
-    sCtx.imageSmoothingEnabled = false; // Сохраняем пиксельную четкость
-    sCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW * scale, badgeH * scale);
-
-    const sImg = sCtx.getImageData(0, 0, scaledCanvas.width, scaledCanvas.height);
-    const sPix = sImg.data;
-
-    for (let i = 0; i < sPix.length; i += 4) {
-        const r = sPix[i];
-        const g = sPix[i + 1];
-        const b = sPix[i + 2];
-
-        // Порог контрастности
-        if (r > 150 && g > 150 && b > 150) {
-            sPix[i] = 0;
-            sPix[i + 1] = 0;
-            sPix[i + 2] = 0; // Черные цифры
-        } else {
-            sPix[i] = 255;
-            sPix[i + 1] = 255;
-            sPix[i + 2] = 255; // Белый фон
-        }
-    }
-
-    sCtx.putImageData(sImg, 0, 0);
-    return scaledCanvas;
-}
-
-window.getCurrentPrice = async function() {
-    if (window.tradeResultState.isProcessingPrice) {
-        console.log("Trade Result: Обработка...");
+    if (bestY === -1 || maxBlueCount < 5) {
+        if (debugMode) console.log("Trade Result Debug: Плашка не найдена.");
         return null;
     }
 
-    const canvas = getScaledTestCanvas();
+    const badgeH = 34;
+    const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
+
+    const badgeCanvas = document.createElement("canvas");
+    badgeCanvas.width = cropW;
+    badgeCanvas.height = badgeH;
+    const badgeCtx = badgeCanvas.getContext("2d");
+
+    // Вырезаем плашку в исходном нормальном качестве (БЕЗ сложного закрашивания)
+    badgeCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
+
+    if (debugMode) {
+        console.log(`Trade Result Debug: Y = ${bestY}, пикселей синего = ${maxBlueCount}`);
+        console.log("Ссылка на чистую плашку:");
+        console.log(badgeCanvas.toDataURL("image/png"));
+    }
+
+    return badgeCanvas;
+}
+
+window.debugBadge = function() {
+    getExactBluePriceCanvas(true);
+};
+
+window.getCurrentPrice = async function() {
+    if (window.tradeResultState.isProcessingPrice) {
+        console.log("Trade Result: Уже идёт процесс распознавания...");
+        return null;
+    }
+
+    const canvas = getExactBluePriceCanvas(false);
     if (!canvas) {
-        console.log("Trade Result ERROR: Плашка не найдена на экране. Попробуйте навести курсор мимо шкалы цен.");
+        console.log("Trade Result ERROR: Плашка цены не найдена");
+        return null;
+    }
+
+    if (typeof Tesseract === "undefined") {
+        console.log("Trade Result ERROR: Tesseract.js не загружен");
         return null;
     }
 
     window.tradeResultState.isProcessingPrice = true;
-    console.log("Trade Result: Распознаём живую цену (скан v6)...");
+    console.log("Trade Result: Сканируем чистую плашку...");
 
     try {
         const worker = await Tesseract.createWorker("eng");
+        
         await worker.setParameters({
             tessedit_char_whitelist: "0123456789.",
-            psm: "6" // Режим распознавания единой строки текста
         });
 
         const { data: { text } } = await worker.recognize(canvas);
@@ -144,12 +142,11 @@ window.getCurrentPrice = async function() {
         const cleanText = text.replace(/[^0-9.]/g, "").trim();
         const price = parseFloat(cleanText);
 
-        if (!isNaN(price) && price > 0) {
-            console.log("Trade Result SUCCESS: Распознана живая цена =", price);
+        if (!isNaN(price)) {
+            console.log("Trade Result SUCCESS: Живая цена =", price);
             return price;
         } else {
             console.log("Trade Result WARNING: Сырой текст с плашки:", text);
-            console.log("Снимок плашки для проверки:", canvas.toDataURL("image/png"));
             return null;
         }
     } catch (err) {
