@@ -1,154 +1,206 @@
 console.log("Trade Result Module Loaded");
 
 window.tradeResultState = {
-    ready: false,
-    isProcessingPrice: false
+    ready: false
 };
 
 function testScreenAccess() {
     const video = document.getElementById("screenVideo");
 
     if (!video) {
-        console.warn("Trade Result: #screenVideo не найден.");
+        console.log("Trade Result: screenVideo NOT FOUND");
         return;
     }
+
+    console.log("Trade Result: screenVideo FOUND");
 
     const checkVideo = setInterval(() => {
         if (video.videoWidth > 0 && video.videoHeight > 0) {
             clearInterval(checkVideo);
+
             window.tradeResultState.ready = true;
-            console.log("Trade Result: Видеопоток ГОТОВ!");
+
+            console.log(
+                "Trade Result: Video READY",
+                video.videoWidth + " x " + video.videoHeight
+            );
+
+            console.log("-----------------------------------------");
+            console.log("Запусти debugBlueBadge() в Console");
         }
     }, 200);
 }
 
-// Захват только вертикальной оси с ценой
-function getExactPriceCanvas(debugMode = false) {
+
+// Ищем синюю плашку текущей цены
+window.debugBlueBadge = function () {
+
     const video = document.getElementById("screenVideo");
-    if (!video || !window.tradeResultState.ready) return null;
 
-    const vWidth = video.videoWidth;
-    const vHeight = video.videoHeight;
+    if (!video || !window.tradeResultState.ready) {
+        console.log("ERROR: Video еще не готов");
+        return;
+    }
 
-    // Границы оси цен
-    const cropX = Math.floor(vWidth * (0.60 + 0.35 * 0.60)); 
-    const cropY = 0; 
-    const cropW = Math.floor(vWidth * 0.09); 
-    const cropH = vHeight;
+    const width = video.videoWidth;
+    const height = video.videoHeight;
 
-    const fullCanvas = document.createElement("canvas");
-    fullCanvas.width = cropW;
-    fullCanvas.height = cropH;
+    // Берём правую часть экрана, где находится ценовая шкала
+    const cropX = Math.floor(width * 0.65);
+    const cropY = Math.floor(height * 0.05);
+    const cropW = Math.floor(width * 0.35);
+    const cropH = Math.floor(height * 0.90);
 
-    const ctx = fullCanvas.getContext("2d");
-    ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+    const canvas = document.createElement("canvas");
 
-    const imgData = ctx.getImageData(0, 0, cropW, cropH);
-    const data = imgData.data;
+    canvas.width = cropW;
+    canvas.height = cropH;
 
-    let maxBlueCount = 0;
-    let bestY = -1;
+    const ctx = canvas.getContext("2d");
 
-    // Ищем строго синюю плашку (игнорируем серые метки)
+    ctx.drawImage(
+        video,
+        cropX,
+        cropY,
+        cropW,
+        cropH,
+        0,
+        0,
+        cropW,
+        cropH
+    );
+
+    const imageData = ctx.getImageData(
+        0,
+        0,
+        cropW,
+        cropH
+    );
+
+    const data = imageData.data;
+
+    let minX = cropW;
+    let maxX = 0;
+    let minY = cropH;
+    let maxY = 0;
+
+    let bluePixels = 0;
+
+    // Ищем синие пиксели
     for (let y = 0; y < cropH; y++) {
-        let bluePixelsInRow = 0;
-        for (let x = 0; x < cropW; x++) {
-            const idx = (y * cropW + x) * 4;
-            const r = data[idx];
-            const g = data[idx + 1];
-            const b = data[idx + 2];
 
-            // Фильтр строго для синей плашки (B существенно выше R и G)
-            const isBlueBadge = (b > 90 && b > r + 30 && b > g + 10);
-            
-            if (isBlueBadge) {
-                bluePixelsInRow++;
+        for (let x = 0; x < cropW; x++) {
+
+            const i = (y * cropW + x) * 4;
+
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // Более строгий поиск синего цвета
+            const isBlue =
+                b > 100 &&
+                b > r * 1.25 &&
+                b > g * 1.05;
+
+            if (isBlue) {
+
+                bluePixels++;
+
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
             }
         }
-
-        if (bluePixelsInRow > maxBlueCount) {
-            maxBlueCount = bluePixelsInRow;
-            bestY = y;
-        }
     }
 
-    // Если синяя плашка не найдена (меньше 8 синих пикселей в строке)
-    if (bestY === -1 || maxBlueCount < 8) {
-        if (debugMode) console.log("Trade Result Debug: Живая синяя плашка не распознана на экране.");
-        return null;
+    console.log("========== BLUE BADGE DEBUG ==========");
+    console.log("Blue pixels:", bluePixels);
+
+    if (bluePixels < 30) {
+
+        console.log("❌ BLUE BADGE NOT FOUND");
+
+        console.log(
+            "Открой всю диагностическую область:"
+        );
+
+        console.log(canvas.toDataURL("image/png"));
+
+        return;
     }
 
-    // Вырезаем прямоугольник вокруг найденного синего центра
-    const badgeH = 32;
-    const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
+    // Переводим координаты обратно в полный экран
+    const absoluteX = cropX + minX;
+    const absoluteY = cropY + minY;
+
+    const badgeWidth = maxX - minX + 1;
+    const badgeHeight = maxY - minY + 1;
+
+    console.log("✅ BLUE BADGE FOUND");
+
+    console.log("X:", absoluteX);
+    console.log("Y:", absoluteY);
+    console.log("W:", badgeWidth);
+    console.log("H:", badgeHeight);
+
+    // Немного расширяем область вокруг плашки
+    const paddingX = 10;
+    const paddingY = 8;
+
+    const finalX = Math.max(
+        0,
+        minX - paddingX
+    );
+
+    const finalY = Math.max(
+        0,
+        minY - paddingY
+    );
+
+    const finalW = Math.min(
+        cropW - finalX,
+        badgeWidth + paddingX * 2
+    );
+
+    const finalH = Math.min(
+        cropH - finalY,
+        badgeHeight + paddingY * 2
+    );
 
     const badgeCanvas = document.createElement("canvas");
-    badgeCanvas.width = cropW;
-    badgeCanvas.height = badgeH;
+
+    badgeCanvas.width = finalW;
+    badgeCanvas.height = finalH;
+
     const badgeCtx = badgeCanvas.getContext("2d");
 
-    badgeCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
+    badgeCtx.drawImage(
+        canvas,
+        finalX,
+        finalY,
+        finalW,
+        finalH,
+        0,
+        0,
+        finalW,
+        finalH
+    );
 
-    if (debugMode) {
-        console.log(`Найдена СИНЯЯ плашка на Y=${bestY} (пикселей синего: ${maxBlueCount}). Ссылка:`);
-        console.log(badgeCanvas.toDataURL("image/png"));
-    }
+    const badgeImage =
+        badgeCanvas.toDataURL("image/png");
 
-    return badgeCanvas;
-}
+    console.log(
+        "DEBUG BADGE IMAGE:"
+    );
 
-window.debugBadge = function() {
-    return getExactPriceCanvas(true);
+    console.log(badgeImage);
+
+    console.log("======================================");
+
+    return badgeImage;
 };
 
-window.getCurrentPrice = async function() {
-    if (window.tradeResultState.isProcessingPrice) {
-        return null;
-    }
 
-    const canvas = getExactPriceCanvas(false);
-    if (!canvas) {
-        console.log("Trade Result ERROR: Не удалось найти синюю плашку живой цены");
-        return null;
-    }
-
-    if (typeof Tesseract === "undefined") {
-        console.error("Trade Result ERROR: Tesseract.js не подключен!");
-        return null;
-    }
-
-    window.tradeResultState.isProcessingPrice = true;
-
-    try {
-        const worker = await Tesseract.createWorker("eng");
-        await worker.setParameters({
-            tessedit_char_whitelist: "0123456789.",
-        });
-
-        const { data: { text } } = await worker.recognize(canvas);
-        await worker.terminate();
-
-        window.tradeResultState.isProcessingPrice = false;
-
-        const cleanText = text.replace(/[^0-9.]/g, "").trim();
-        const price = parseFloat(cleanText);
-
-        if (!isNaN(price)) {
-            console.log("%c Trade Result SUCCESS: Живая цена = " + price, "color: #00ff00; font-weight: bold;");
-            return price;
-        } else {
-            console.warn("Trade Result WARNING: Сырой текст с плашки:", text);
-            return null;
-        }
-    } catch (err) {
-        window.tradeResultState.isProcessingPrice = false;
-        console.error("Trade Result OCR Error:", err);
-        return null;
-    }
-};
-
-if (document.readyState === "complete" || document.readyState === "interactive") {
-    testScreenAccess();
-} else {
-    document.addEventListener("DOMContentLoaded", testScreenAccess);
-}
+testScreenAccess();
