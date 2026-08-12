@@ -9,7 +9,17 @@ function testScreenAccess() {
     }
 
     console.log("Trade Result: screenVideo FOUND");
-    console.log("Video size:", video.videoWidth, "x", video.videoHeight);
+
+    const checkVideo = setInterval(() => {
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+            clearInterval(checkVideo);
+
+            console.log(
+                "Trade Result: Video READY",
+                video.videoWidth + " x " + video.videoHeight
+            );
+        }
+    }, 200);
 }
 
 testScreenAccess();
