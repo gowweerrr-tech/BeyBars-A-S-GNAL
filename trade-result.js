@@ -25,25 +25,25 @@ function testScreenAccess() {
                 video.videoWidth + " x " + video.videoHeight
             );
             console.log("-----------------------------------------");
-            console.log("Запустите debugBadge() для визуальной проверки вырезанной плашки.");
+            console.log("Запустите debugBadge() для проверки захвата плашки цены.");
             console.log("Запустите getCurrentPrice() для распознавания цены.");
         }
     }, 200);
 }
 
-// Находим синюю плашку и возвращаем её в чистом (неиспорченном) виде
-function getExactBluePriceCanvas(debugMode = false) {
+// Захват шкалы цен с динамическим отслеживанием плашки по всей высоте
+function getExactPriceCanvas(debugMode = false) {
     const video = document.getElementById("screenVideo");
     if (!video || !window.tradeResultState.ready) return null;
 
     const vWidth = video.videoWidth;
     const vHeight = video.videoHeight;
 
-    // Правая часть экрана (ось цен)
-    const cropX = Math.floor(vWidth * 0.70);
-    const cropY = Math.floor(vHeight * 0.15);
-    const cropW = Math.floor(vWidth * 0.20);
-    const cropH = Math.floor(vHeight * 0.70);
+    // Узкая вертикальная зона строго по шкале цен (чуть левее панели выплат)
+    const cropX = Math.floor(vWidth * 0.81); 
+    const cropY = Math.floor(vHeight * 0.10);
+    const cropW = Math.floor(vWidth * 0.11); 
+    const cropH = Math.floor(vHeight * 0.80);
 
     const fullCanvas = document.createElement("canvas");
     fullCanvas.width = cropW;
@@ -55,35 +55,37 @@ function getExactBluePriceCanvas(debugMode = false) {
     const imgData = ctx.getImageData(0, 0, cropW, cropH);
     const data = imgData.data;
 
-    let maxBlueCount = 0;
+    let maxColorCount = 0;
     let bestY = -1;
 
-    // Сканируем строки на наличие синей плашки
+    // Сканируем всю высоту шкалы в поиске плашки текущей цены (яркий цвет плашки)
     for (let y = 0; y < cropH; y++) {
-        let blueInRow = 0;
+        let colorInRow = 0;
         for (let x = 0; x < cropW; x++) {
             const idx = (y * cropW + x) * 4;
             const r = data[idx];
             const g = data[idx + 1];
             const b = data[idx + 2];
 
-            // Ищем насыщенный синий/голубой фон
-            if (b > 100 && b > r + 20) {
-                blueInRow++;
+            // Ищем любой яркий цвет плашки (синий, зеленый или красный), отличающийся от темного фона
+            const isBadgeColor = (b > 110 || g > 110 || r > 110) && !(r < 40 && g < 40 && b < 40);
+            if (isBadgeColor) {
+                colorInRow++;
             }
         }
-        if (blueInRow > maxBlueCount) {
-            maxBlueCount = blueInRow;
+        if (colorInRow > maxColorCount) {
+            maxColorCount = colorInRow;
             bestY = y;
         }
     }
 
-    if (bestY === -1 || maxBlueCount < 5) {
-        if (debugMode) console.log("Trade Result Debug: Плашка не найдена.");
+    if (bestY === -1 || maxColorCount < 10) {
+        if (debugMode) console.log("Trade Result Debug: Плашка не найдена на шкале.");
         return null;
     }
 
-    const badgeH = 34;
+    // Вырезаем прямоугольник вокруг динамически найденной позиции цены по Y
+    const badgeH = 36;
     const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
 
     const badgeCanvas = document.createElement("canvas");
@@ -91,12 +93,11 @@ function getExactBluePriceCanvas(debugMode = false) {
     badgeCanvas.height = badgeH;
     const badgeCtx = badgeCanvas.getContext("2d");
 
-    // Вырезаем плашку в исходном нормальном качестве (БЕЗ сложного закрашивания)
     badgeCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
 
     if (debugMode) {
-        console.log(`Trade Result Debug: Y = ${bestY}, пикселей синего = ${maxBlueCount}`);
-        console.log("Ссылка на чистую плашку:");
+        console.log(`Trade Result Debug: Найдена динамическая позиция цены Y = ${bestY}`);
+        console.log("Ссылка на захваченную плашку цены:");
         console.log(badgeCanvas.toDataURL("image/png"));
     }
 
@@ -104,7 +105,7 @@ function getExactBluePriceCanvas(debugMode = false) {
 }
 
 window.debugBadge = function() {
-    getExactBluePriceCanvas(true);
+    getExactPriceCanvas(true);
 };
 
 window.getCurrentPrice = async function() {
@@ -113,7 +114,7 @@ window.getCurrentPrice = async function() {
         return null;
     }
 
-    const canvas = getExactBluePriceCanvas(false);
+    const canvas = getExactPriceCanvas(false);
     if (!canvas) {
         console.log("Trade Result ERROR: Плашка цены не найдена");
         return null;
@@ -125,7 +126,6 @@ window.getCurrentPrice = async function() {
     }
 
     window.tradeResultState.isProcessingPrice = true;
-    console.log("Trade Result: Сканируем чистую плашку...");
 
     try {
         const worker = await Tesseract.createWorker("eng");
