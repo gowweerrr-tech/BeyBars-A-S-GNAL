@@ -30,15 +30,15 @@ function testScreenAccess() {
     }, 200);
 }
 
-// Захват только зоны шкалы цен (где плашка 1.16263)
-function getPriceCropCanvas() {
+// Захват и бинаризация синей плашки текущей цены
+function getBluePriceCanvas() {
     const video = document.getElementById("screenVideo");
     if (!video || !window.tradeResultState.ready) return null;
 
     const vWidth = video.videoWidth;
     const vHeight = video.videoHeight;
 
-    // Область шкалы цен (чуть левее кнопок КУПИТЬ/ПРОДАТЬ)
+    // Зона шкалы цен
     const cropX = Math.floor(vWidth * 0.70);
     const cropY = Math.floor(vHeight * 0.20);
     const cropW = Math.floor(vWidth * 0.15);
@@ -51,6 +51,32 @@ function getPriceCropCanvas() {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
+    // Фильтр по цвету: выделяем синюю плашку (высокий Blue и Red < Blue, Green < Blue)
+    const imgData = ctx.getImageData(0, 0, cropW, cropH);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // Синяя плашка Pocket Option имеет синий оттенок (B преобладает над R)
+        const isBlue = (b > 80 && b > r + 20 && b > g - 20);
+
+        if (isBlue) {
+            // Делаем текст/плашку контрастной черной для OCR
+            data[i] = 0;
+            data[i + 1] = 0;
+            data[i + 2] = 0;
+        } else {
+            // Все остальное делаем белым фоном
+            data[i] = 255;
+            data[i + 1] = 255;
+            data[i + 2] = 255;
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
     return canvas;
 }
 
@@ -61,7 +87,7 @@ window.getCurrentPrice = async function() {
         return null;
     }
 
-    const canvas = getPriceCropCanvas();
+    const canvas = getBluePriceCanvas();
     if (!canvas) {
         console.log("Trade Result ERROR: Кадр недоступен");
         return null;
@@ -73,12 +99,11 @@ window.getCurrentPrice = async function() {
     }
 
     window.tradeResultState.isProcessingPrice = true;
-    console.log("Trade Result: Распознаём цену...");
+    console.log("Trade Result: Ищем синюю плашку цены...");
 
     try {
         const worker = await Tesseract.createWorker("eng");
         
-        // Настраиваем только цифровой режим
         await worker.setParameters({
             tessedit_char_whitelist: "0123456789.",
         });
@@ -88,15 +113,14 @@ window.getCurrentPrice = async function() {
 
         window.tradeResultState.isProcessingPrice = false;
 
-        // Очищаем результат от лишних символов
         const cleanText = text.replace(/[^0-9.]/g, "").trim();
         const price = parseFloat(cleanText);
 
         if (!isNaN(price)) {
-            console.log("Trade Result SUCCESS: Распознанная цена =", price);
+            console.log("Trade Result SUCCESS: Живая цена (синяя плашка) =", price);
             return price;
         } else {
-            console.log("Trade Result WARNING: Не удалось распознать число. Сырой текст:", text);
+            console.log("Trade Result WARNING: Не удалось распознать число с синей плашки. Текст:", text);
             return null;
         }
     } catch (err) {
