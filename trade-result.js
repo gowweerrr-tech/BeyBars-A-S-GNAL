@@ -1,4 +1,4 @@
-console.log("Trade Result Module Loaded v5");
+console.log("Trade Result Module Loaded v6");
 
 window.tradeResultState = {
     ready: false,
@@ -25,23 +25,23 @@ function testScreenAccess() {
                 video.videoWidth + " x " + video.videoHeight
             );
             console.log("-----------------------------------------");
-            console.log("Запустите getCurrentPrice() в консоли для распознавания цены.");
+            console.log("Запустите getCurrentPrice() в консоли.");
         }
     }, 200);
 }
 
-// Захват точной области синей плашки цены
-function getPriceBadgeCanvas() {
+// Захват с масштабированием x3 для идеальной четкости OCR
+function getScaledTestCanvas() {
     const video = document.getElementById("screenVideo");
     if (!video || !window.tradeResultState.ready) return null;
 
     const vWidth = video.videoWidth;
     const vHeight = video.videoHeight;
 
-    // Вырезаем узкую вертикальную полосу возле правой оси (72% - 82% по ширине)
-    const cropX = Math.floor(vWidth * 0.72);
+    // Узкая область оси цен
+    const cropX = Math.floor(vWidth * 0.73);
     const cropY = Math.floor(vHeight * 0.15);
-    const cropW = Math.floor(vWidth * 0.10);
+    const cropW = Math.floor(vWidth * 0.08);
     const cropH = Math.floor(vHeight * 0.70);
 
     const fullCanvas = document.createElement("canvas");
@@ -57,7 +57,6 @@ function getPriceBadgeCanvas() {
     let maxBlueCount = 0;
     let bestY = -1;
 
-    // Ищем строку с максимальной концентрацией синего цвета
     for (let y = 0; y < cropH; y++) {
         let blueInRow = 0;
         for (let x = 0; x < cropW; x++) {
@@ -66,8 +65,7 @@ function getPriceBadgeCanvas() {
             const g = data[idx + 1];
             const b = data[idx + 2];
 
-            // Формула для синей плашки Pocket Option (B заметно преобладает над R)
-            if (b > 90 && b > r + 25) {
+            if (b > 80 && b > r + 20) {
                 blueInRow++;
             }
         }
@@ -77,74 +75,65 @@ function getPriceBadgeCanvas() {
         }
     }
 
-    if (bestY === -1 || maxBlueCount < 5) {
-        return null;
-    }
+    if (bestY === -1 || maxBlueCount < 3) return null;
 
-    // Вырезаем точный прямоугольник плашки по высоте (32px)
-    const badgeH = 32;
+    const badgeH = 28;
     const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
 
-    const badgeCanvas = document.createElement("canvas");
-    badgeCanvas.width = cropW;
-    badgeCanvas.height = badgeH;
-    const badgeCtx = badgeCanvas.getContext("2d");
+    // Масштабируем в 3 раза для улучшения OCR
+    const scale = 3;
+    const scaledCanvas = document.createElement("canvas");
+    scaledCanvas.width = cropW * scale;
+    scaledCanvas.height = badgeH * scale;
 
-    badgeCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
+    const sCtx = scaledCanvas.getContext("2d");
+    sCtx.imageSmoothingEnabled = false; // Сохраняем пиксельную четкость
+    sCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW * scale, badgeH * scale);
 
-    // Увеличиваем контрастность: инвертируем синий фон в белый, а текст делаем чётким чёрным
-    const bImg = badgeCtx.getImageData(0, 0, cropW, badgeH);
-    const bPix = bImg.data;
+    const sImg = sCtx.getImageData(0, 0, scaledCanvas.width, scaledCanvas.height);
+    const sPix = sImg.data;
 
-    for (let i = 0; i < bPix.length; i += 4) {
-        const r = bPix[i];
-        const g = bPix[i + 1];
-        const b = bPix[i + 2];
+    for (let i = 0; i < sPix.length; i += 4) {
+        const r = sPix[i];
+        const g = sPix[i + 1];
+        const b = sPix[i + 2];
 
-        // Белые пиксели текста
-        const isText = (r > 180 && g > 180 && b > 180);
-
-        if (isText) {
-            bPix[i] = 0;
-            bPix[i + 1] = 0;
-            bPix[i + 2] = 0; // Черный шрифт
+        // Порог контрастности
+        if (r > 150 && g > 150 && b > 150) {
+            sPix[i] = 0;
+            sPix[i + 1] = 0;
+            sPix[i + 2] = 0; // Черные цифры
         } else {
-            bPix[i] = 255;
-            bPix[i + 1] = 255;
-            bPix[i + 2] = 255; // Белый фон
+            sPix[i] = 255;
+            sPix[i + 1] = 255;
+            sPix[i + 2] = 255; // Белый фон
         }
     }
 
-    badgeCtx.putImageData(bImg, 0, 0);
-    return badgeCanvas;
+    sCtx.putImageData(sImg, 0, 0);
+    return scaledCanvas;
 }
 
-// Функция получения текущей цены
 window.getCurrentPrice = async function() {
     if (window.tradeResultState.isProcessingPrice) {
-        console.log("Trade Result: Идёт обработка...");
+        console.log("Trade Result: Обработка...");
         return null;
     }
 
-    const canvas = getPriceBadgeCanvas();
+    const canvas = getScaledTestCanvas();
     if (!canvas) {
-        console.log("Trade Result ERROR: Синяя плашка цены не найдена на экране");
-        return null;
-    }
-
-    if (typeof Tesseract === "undefined") {
-        console.log("Trade Result ERROR: Библиотека Tesseract.js не подключена");
+        console.log("Trade Result ERROR: Плашка не найдена на экране. Попробуйте навести курсор мимо шкалы цен.");
         return null;
     }
 
     window.tradeResultState.isProcessingPrice = true;
-    console.log("Trade Result: Распознаём живую цену...");
+    console.log("Trade Result: Распознаём живую цену (скан v6)...");
 
     try {
         const worker = await Tesseract.createWorker("eng");
-        
         await worker.setParameters({
             tessedit_char_whitelist: "0123456789.",
+            psm: "6" // Режим распознавания единой строки текста
         });
 
         const { data: { text } } = await worker.recognize(canvas);
@@ -159,7 +148,8 @@ window.getCurrentPrice = async function() {
             console.log("Trade Result SUCCESS: Распознана живая цена =", price);
             return price;
         } else {
-            console.log("Trade Result WARNING: Не удалось распознать цифры. Текст:", text);
+            console.log("Trade Result WARNING: Сырой текст с плашки:", text);
+            console.log("Снимок плашки для проверки:", canvas.toDataURL("image/png"));
             return null;
         }
     } catch (err) {
