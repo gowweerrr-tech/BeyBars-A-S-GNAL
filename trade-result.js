@@ -25,13 +25,13 @@ function testScreenAccess() {
                 video.videoWidth + " x " + video.videoHeight
             );
             console.log("-----------------------------------------");
-            console.log("Запустите debugBadge() для проверки захвата плашки цены.");
+            console.log("Запустите debugBadge() для визуальной проверки оси цен.");
             console.log("Запустите getCurrentPrice() для распознавания цены.");
         }
     }, 200);
 }
 
-// Захват шкалы цен с динамическим отслеживанием плашки по всей высоте
+// Поиск и захват плашки цены
 function getExactPriceCanvas(debugMode = false) {
     const video = document.getElementById("screenVideo");
     if (!video || !window.tradeResultState.ready) return null;
@@ -39,10 +39,10 @@ function getExactPriceCanvas(debugMode = false) {
     const vWidth = video.videoWidth;
     const vHeight = video.videoHeight;
 
-    // Узкая вертикальная зона строго по шкале цен (чуть левее панели выплат)
-    const cropX = Math.floor(vWidth * 0.81); 
+    // Сдвигаем X левее (от 68% до 78% ширины), чтобы гарантированно обойти кнопку "КУПИТЬ"
+    const cropX = Math.floor(vWidth * 0.68); 
     const cropY = Math.floor(vHeight * 0.10);
-    const cropW = Math.floor(vWidth * 0.11); 
+    const cropW = Math.floor(vWidth * 0.10); 
     const cropH = Math.floor(vHeight * 0.80);
 
     const fullCanvas = document.createElement("canvas");
@@ -52,13 +52,20 @@ function getExactPriceCanvas(debugMode = false) {
     const ctx = fullCanvas.getContext("2d");
     ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
+    // Если включена отладка, выводим ВСЮ полосу оси цен, чтобы увидеть, где плашка
+    if (debugMode) {
+        console.log(`Trade Result Debug: Сканирование области X=${cropX}, Y=${cropY}, W=${cropW}, H=${cropH}`);
+        console.log("Ссылка на всю ось цен (проверьте, видна ли плашка):");
+        console.log(fullCanvas.toDataURL("image/png"));
+    }
+
     const imgData = ctx.getImageData(0, 0, cropW, cropH);
     const data = imgData.data;
 
     let maxColorCount = 0;
     let bestY = -1;
 
-    // Сканируем всю высоту шкалы в поиске плашки текущей цены (яркий цвет плашки)
+    // Поиск динамической плашки цены по Y
     for (let y = 0; y < cropH; y++) {
         let colorInRow = 0;
         for (let x = 0; x < cropW; x++) {
@@ -67,8 +74,8 @@ function getExactPriceCanvas(debugMode = false) {
             const g = data[idx + 1];
             const b = data[idx + 2];
 
-            // Ищем любой яркий цвет плашки (синий, зеленый или красный), отличающийся от темного фона
-            const isBadgeColor = (b > 110 || g > 110 || r > 110) && !(r < 40 && g < 40 && b < 40);
+            // Ищем синий/голубой оттенок живой плашки
+            const isBadgeColor = (b > 100 && b > r + 15);
             if (isBadgeColor) {
                 colorInRow++;
             }
@@ -79,12 +86,11 @@ function getExactPriceCanvas(debugMode = false) {
         }
     }
 
-    if (bestY === -1 || maxColorCount < 10) {
-        if (debugMode) console.log("Trade Result Debug: Плашка не найдена на шкале.");
+    if (bestY === -1 || maxColorCount < 8) {
+        if (debugMode) console.log("Trade Result Debug: Синяя плашка не найдена на полосе.");
         return null;
     }
 
-    // Вырезаем прямоугольник вокруг динамически найденной позиции цены по Y
     const badgeH = 36;
     const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
 
@@ -94,12 +100,6 @@ function getExactPriceCanvas(debugMode = false) {
     const badgeCtx = badgeCanvas.getContext("2d");
 
     badgeCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
-
-    if (debugMode) {
-        console.log(`Trade Result Debug: Найдена динамическая позиция цены Y = ${bestY}`);
-        console.log("Ссылка на захваченную плашку цены:");
-        console.log(badgeCanvas.toDataURL("image/png"));
-    }
 
     return badgeCanvas;
 }
