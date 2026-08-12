@@ -9,26 +9,20 @@ function testScreenAccess() {
     const video = document.getElementById("screenVideo");
 
     if (!video) {
-        console.log("Trade Result: screenVideo NOT FOUND");
+        console.warn("Trade Result: #screenVideo не найден.");
         return;
     }
-
-    console.log("Trade Result: screenVideo FOUND");
 
     const checkVideo = setInterval(() => {
         if (video.videoWidth > 0 && video.videoHeight > 0) {
             clearInterval(checkVideo);
             window.tradeResultState.ready = true;
-
-            console.log("Trade Result: Video READY", video.videoWidth + " x " + video.videoHeight);
-            console.log("-----------------------------------------");
-            console.log("Запустите debugBadge() для визуальной проверки вырезанной плашки.");
-            console.log("Запустите getCurrentPrice() для распознавания живой цены.");
+            console.log("Trade Result: Видеопоток ГОТОВ!");
         }
     }, 200);
 }
 
-// Захват только вертикальной полосы шкалы цен
+// Захват только вертикальной оси с ценой
 function getExactPriceCanvas(debugMode = false) {
     const video = document.getElementById("screenVideo");
     if (!video || !window.tradeResultState.ready) return null;
@@ -36,10 +30,10 @@ function getExactPriceCanvas(debugMode = false) {
     const vWidth = video.videoWidth;
     const vHeight = video.videoHeight;
 
-    // Точные координаты оси цен на основе широкого скриншота
-    const cropX = Math.floor(vWidth * (0.60 + 0.35 * 0.62)); // Начинаем от левого края шкалы
+    // Границы оси цен
+    const cropX = Math.floor(vWidth * (0.60 + 0.35 * 0.60)); 
     const cropY = 0; 
-    const cropW = Math.floor(vWidth * 0.08); // Ширина зоны шкалы цен
+    const cropW = Math.floor(vWidth * 0.09); 
     const cropH = vHeight;
 
     const fullCanvas = document.createElement("canvas");
@@ -52,35 +46,39 @@ function getExactPriceCanvas(debugMode = false) {
     const imgData = ctx.getImageData(0, 0, cropW, cropH);
     const data = imgData.data;
 
-    let maxColorCount = 0;
+    let maxBlueCount = 0;
     let bestY = -1;
 
-    // Поиск яркого синего цвета плашки по всей высоте Y
+    // Ищем строго синюю плашку (игнорируем серые метки)
     for (let y = 0; y < cropH; y++) {
-        let colorInRow = 0;
+        let bluePixelsInRow = 0;
         for (let x = 0; x < cropW; x++) {
             const idx = (y * cropW + x) * 4;
             const r = data[idx];
             const g = data[idx + 1];
             const b = data[idx + 2];
 
-            // Синий фон живой плашки (B преобладает над R и G)
-            if (b > 80 && b > r + 15 && g > 50) {
-                colorInRow++;
+            // Фильтр строго для синей плашки (B существенно выше R и G)
+            const isBlueBadge = (b > 90 && b > r + 30 && b > g + 10);
+            
+            if (isBlueBadge) {
+                bluePixelsInRow++;
             }
         }
-        if (colorInRow > maxColorCount) {
-            maxColorCount = colorInRow;
+
+        if (bluePixelsInRow > maxBlueCount) {
+            maxBlueCount = bluePixelsInRow;
             bestY = y;
         }
     }
 
-    if (bestY === -1 || maxColorCount < 6) {
-        if (debugMode) console.log("Trade Result Debug: Синяя плашка не найдена на вертикальной оси.");
+    // Если синяя плашка не найдена (меньше 8 синих пикселей в строке)
+    if (bestY === -1 || maxBlueCount < 8) {
+        if (debugMode) console.log("Trade Result Debug: Живая синяя плашка не распознана на экране.");
         return null;
     }
 
-    // Вырезаем прямоугольник вокруг найденной Y-координаты
+    // Вырезаем прямоугольник вокруг найденного синего центра
     const badgeH = 32;
     const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
 
@@ -92,7 +90,7 @@ function getExactPriceCanvas(debugMode = false) {
     badgeCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
 
     if (debugMode) {
-        console.log(`Найдена плашка на Y=${bestY}. Картинка для OCR:`);
+        console.log(`Найдена СИНЯЯ плашка на Y=${bestY} (пикселей синего: ${maxBlueCount}). Ссылка:`);
         console.log(badgeCanvas.toDataURL("image/png"));
     }
 
@@ -100,23 +98,22 @@ function getExactPriceCanvas(debugMode = false) {
 }
 
 window.debugBadge = function() {
-    getExactPriceCanvas(true);
+    return getExactPriceCanvas(true);
 };
 
 window.getCurrentPrice = async function() {
     if (window.tradeResultState.isProcessingPrice) {
-        console.log("Trade Result: Процесс уже идет...");
         return null;
     }
 
     const canvas = getExactPriceCanvas(false);
     if (!canvas) {
-        console.log("Trade Result ERROR: Не удалось вырезать плашку с ценой");
+        console.log("Trade Result ERROR: Не удалось найти синюю плашку живой цены");
         return null;
     }
 
     if (typeof Tesseract === "undefined") {
-        console.log("Trade Result ERROR: Tesseract.js не подключен");
+        console.error("Trade Result ERROR: Tesseract.js не подключен!");
         return null;
     }
 
@@ -137,10 +134,10 @@ window.getCurrentPrice = async function() {
         const price = parseFloat(cleanText);
 
         if (!isNaN(price)) {
-            console.log("Trade Result SUCCESS: Текущая цена =", price);
+            console.log("%c Trade Result SUCCESS: Живая цена = " + price, "color: #00ff00; font-weight: bold;");
             return price;
         } else {
-            console.log("Trade Result WARNING: Не удалось распознать число из текста:", text);
+            console.warn("Trade Result WARNING: Сырой текст с плашки:", text);
             return null;
         }
     } catch (err) {
@@ -150,4 +147,8 @@ window.getCurrentPrice = async function() {
     }
 };
 
-testScreenAccess();
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    testScreenAccess();
+} else {
+    document.addEventListener("DOMContentLoaded", testScreenAccess);
+}
