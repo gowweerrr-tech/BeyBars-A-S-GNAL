@@ -25,15 +25,14 @@ function testScreenAccess() {
                 video.videoWidth + " x " + video.videoHeight
             );
 
-            console.log("-----------------------------------------");
-            console.log("Запусти debugBlueBadge() в Console");
+            console.log("Запусти findLivePriceBadge()");
         }
     }, 200);
 }
 
 
-// Ищем синюю плашку текущей цены
-window.debugBlueBadge = function () {
+// Ищем отдельные компактные синие области
+window.findLivePriceBadge = function () {
 
     const video = document.getElementById("screenVideo");
 
@@ -42,165 +41,301 @@ window.debugBlueBadge = function () {
         return;
     }
 
-    const width = video.videoWidth;
-    const height = video.videoHeight;
+    const W = video.videoWidth;
+    const H = video.videoHeight;
 
-    // Берём правую часть экрана, где находится ценовая шкала
-    const cropX = Math.floor(width * 0.65);
-    const cropY = Math.floor(height * 0.05);
-    const cropW = Math.floor(width * 0.35);
-    const cropH = Math.floor(height * 0.90);
+    // Область графика.
+    // Y НЕ фиксируем — сканируем всю высоту.
+    const x0 = Math.floor(W * 0.35);
+    const x1 = Math.floor(W * 0.78);
 
     const canvas = document.createElement("canvas");
+    canvas.width = x1 - x0;
+    canvas.height = H;
 
-    canvas.width = cropW;
-    canvas.height = cropH;
-
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", {
+        willReadFrequently: true
+    });
 
     ctx.drawImage(
         video,
-        cropX,
-        cropY,
-        cropW,
-        cropH,
+        x0,
+        0,
+        x1 - x0,
+        H,
         0,
         0,
-        cropW,
-        cropH
+        x1 - x0,
+        H
     );
 
-    const imageData = ctx.getImageData(
+    const image = ctx.getImageData(
         0,
         0,
-        cropW,
-        cropH
+        canvas.width,
+        canvas.height
     );
 
-    const data = imageData.data;
+    const data = image.data;
+    const cw = canvas.width;
+    const ch = canvas.height;
 
-    let minX = cropW;
-    let maxX = 0;
-    let minY = cropH;
-    let maxY = 0;
+    // Маска синих пикселей
+    const mask = new Uint8Array(cw * ch);
 
-    let bluePixels = 0;
+    for (let y = 0; y < ch; y++) {
+        for (let x = 0; x < cw; x++) {
 
-    // Ищем синие пиксели
-    for (let y = 0; y < cropH; y++) {
-
-        for (let x = 0; x < cropW; x++) {
-
-            const i = (y * cropW + x) * 4;
+            const i = (y * cw + x) * 4;
 
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
 
-            // Более строгий поиск синего цвета
             const isBlue =
-                b > 100 &&
-                b > r * 1.25 &&
+                b > 90 &&
+                b > r * 1.20 &&
                 b > g * 1.05;
 
             if (isBlue) {
-
-                bluePixels++;
-
-                if (x < minX) minX = x;
-                if (x > maxX) maxX = x;
-                if (y < minY) minY = y;
-                if (y > maxY) maxY = y;
+                mask[y * cw + x] = 1;
             }
         }
     }
 
-    console.log("========== BLUE BADGE DEBUG ==========");
-    console.log("Blue pixels:", bluePixels);
+    // Поиск отдельных связных компонентов
+    const visited = new Uint8Array(cw * ch);
+    const components = [];
 
-    if (bluePixels < 30) {
+    function floodFill(startX, startY) {
 
-        console.log("❌ BLUE BADGE NOT FOUND");
+        const queue = [[startX, startY]];
+        visited[startY * cw + startX] = 1;
 
-        console.log(
-            "Открой всю диагностическую область:"
-        );
+        let minX = startX;
+        let maxX = startX;
+        let minY = startY;
+        let maxY = startY;
+        let count = 0;
 
-        console.log(canvas.toDataURL("image/png"));
+        while (queue.length) {
 
-        return;
+            const [x, y] = queue.pop();
+
+            count++;
+
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+
+            const neighbours = [
+                [x + 1, y],
+                [x - 1, y],
+                [x, y + 1],
+                [x, y - 1]
+            ];
+
+            for (const [nx, ny] of neighbours) {
+
+                if (
+                    nx < 0 ||
+                    ny < 0 ||
+                    nx >= cw ||
+                    ny >= ch
+                ) {
+                    continue;
+                }
+
+                const index = ny * cw + nx;
+
+                if (
+                    mask[index] &&
+                    !visited[index]
+                ) {
+                    visited[index] = 1;
+                    queue.push([nx, ny]);
+                }
+            }
+        }
+
+        return {
+            minX,
+            maxX,
+            minY,
+            maxY,
+            width: maxX - minX + 1,
+            height: maxY - minY + 1,
+            pixels: count
+        };
     }
 
-    // Переводим координаты обратно в полный экран
-    const absoluteX = cropX + minX;
-    const absoluteY = cropY + minY;
+    for (let y = 0; y < ch; y++) {
 
-    const badgeWidth = maxX - minX + 1;
-    const badgeHeight = maxY - minY + 1;
+        for (let x = 0; x < cw; x++) {
 
-    console.log("✅ BLUE BADGE FOUND");
+            const index = y * cw + x;
 
-    console.log("X:", absoluteX);
-    console.log("Y:", absoluteY);
-    console.log("W:", badgeWidth);
-    console.log("H:", badgeHeight);
+            if (
+                mask[index] &&
+                !visited[index]
+            ) {
 
-    // Немного расширяем область вокруг плашки
-    const paddingX = 10;
-    const paddingY = 8;
+                const component =
+                    floodFill(x, y);
 
-    const finalX = Math.max(
+                // Отбрасываем совсем мелкие объекты
+                if (
+                    component.pixels >= 30 &&
+                    component.width >= 10 &&
+                    component.height >= 5
+                ) {
+                    components.push(component);
+                }
+            }
+        }
+    }
+
+    console.log("========== COMPONENTS ==========");
+    console.log(
+        "Найдено синих объектов:",
+        components.length
+    );
+
+    // Сортируем по площади
+    components.sort(
+        (a, b) =>
+            (b.width * b.height) -
+            (a.width * a.height)
+    );
+
+    components.slice(0, 20).forEach((c, index) => {
+
+        console.log(
+            "#" + index,
+            "X:",
+            x0 + c.minX,
+            "Y:",
+            c.minY,
+            "W:",
+            c.width,
+            "H:",
+            c.height,
+            "pixels:",
+            c.pixels
+        );
+    });
+
+    console.log("==============================");
+
+    // Кандидаты на маленькую горизонтальную плашку
+    const candidates = components.filter(c => {
+
+        const ratio = c.width / c.height;
+
+        return (
+            c.width >= 25 &&
+            c.width <= 250 &&
+            c.height >= 8 &&
+            c.height <= 80 &&
+            ratio >= 2
+        );
+    });
+
+    console.log(
+        "Кандидатов на price badge:",
+        candidates.length
+    );
+
+    if (!candidates.length) {
+
+        console.log(
+            "❌ Подходящая синяя плашка пока не найдена."
+        );
+
+        return components;
+    }
+
+    // Берём самый крупный подходящий компактный объект
+    const badge = candidates.sort(
+        (a, b) =>
+            (b.width * b.height) -
+            (a.width * a.height)
+    )[0];
+
+    console.log("✅ PRICE BADGE CANDIDATE");
+
+    console.log(
+        "X:",
+        x0 + badge.minX
+    );
+
+    console.log(
+        "Y:",
+        badge.minY
+    );
+
+    console.log(
+        "W:",
+        badge.width
+    );
+
+    console.log(
+        "H:",
+        badge.height
+    );
+
+    // Вырезаем найденный объект
+    const padding = 10;
+
+    const bx = Math.max(
         0,
-        minX - paddingX
+        badge.minX - padding
     );
 
-    const finalY = Math.max(
+    const by = Math.max(
         0,
-        minY - paddingY
+        badge.minY - padding
     );
 
-    const finalW = Math.min(
-        cropW - finalX,
-        badgeWidth + paddingX * 2
+    const bw = Math.min(
+        cw - bx,
+        badge.width + padding * 2
     );
 
-    const finalH = Math.min(
-        cropH - finalY,
-        badgeHeight + paddingY * 2
+    const bh = Math.min(
+        ch - by,
+        badge.height + padding * 2
     );
 
-    const badgeCanvas = document.createElement("canvas");
+    const badgeCanvas =
+        document.createElement("canvas");
 
-    badgeCanvas.width = finalW;
-    badgeCanvas.height = finalH;
+    badgeCanvas.width = bw;
+    badgeCanvas.height = bh;
 
-    const badgeCtx = badgeCanvas.getContext("2d");
+    const badgeCtx =
+        badgeCanvas.getContext("2d");
 
     badgeCtx.drawImage(
         canvas,
-        finalX,
-        finalY,
-        finalW,
-        finalH,
+        bx,
+        by,
+        bw,
+        bh,
         0,
         0,
-        finalW,
-        finalH
+        bw,
+        bh
     );
 
-    const badgeImage =
+    const result =
         badgeCanvas.toDataURL("image/png");
 
-    console.log(
-        "DEBUG BADGE IMAGE:"
-    );
+    console.log("DEBUG BADGE IMAGE:");
+    console.log(result);
 
-    console.log(badgeImage);
-
-    console.log("======================================");
-
-    return badgeImage;
+    return result;
 };
-
 
 testScreenAccess();
