@@ -1,8 +1,7 @@
 console.log("Trade Result Module Loaded");
 
 window.tradeResultState = {
-    ready: false,
-    lastFrameData: null
+    ready: false
 };
 
 function testScreenAccess() {
@@ -24,38 +23,41 @@ function testScreenAccess() {
                 "Trade Result: Video READY",
                 video.videoWidth + " x " + video.videoHeight
             );
-            
-            console.log("Trade Result: Выполните captureTestFrame() в консоли для проверки кадра.");
+            console.log("-----------------------------------------");
+            console.log("Запустите inspectPriceArea() в консоли, чтобы вырезать область цены.");
         }
     }, 200);
 }
 
-// Функция для тестового захвата кадра
-window.captureTestFrame = function() {
+// Функция вырезания области (по умолчанию берём правую часть кадра, где ось цен)
+window.inspectPriceArea = function(xPercent = 0.70, yPercent = 0.20, wPercent = 0.30, hPercent = 0.60) {
     const video = document.getElementById("screenVideo");
     if (!video || !window.tradeResultState.ready) {
         console.log("Trade Result ERROR: Видеопоток еще не готов");
-        return null;
+        return;
     }
 
-    // Создаем тестовый canvas
-    const testCanvas = document.createElement("canvas");
-    testCanvas.width = video.videoWidth;
-    testCanvas.height = video.videoHeight;
-    const ctx = testCanvas.getContext("2d");
+    const canvas = document.createElement("canvas");
+    const vWidth = video.videoWidth;
+    const vHeight = video.videoHeight;
 
-    // Рендерим текущий кадр с видео
-    ctx.drawImage(video, 0, 0, testCanvas.width, testCanvas.height);
-    
-    // Преобразуем кадр в DataURL для быстрой проверки
-    const dataURL = testCanvas.toDataURL("image/png");
-    window.tradeResultState.lastFrameData = dataURL;
+    // Вычисляем координаты кропа в пикселях
+    const cropX = Math.floor(vWidth * xPercent);
+    const cropY = Math.floor(vHeight * yPercent);
+    const cropW = Math.floor(vWidth * wPercent);
+    const cropH = Math.floor(vHeight * hPercent);
 
-    console.log("Trade Result: Кадр успешно захвачен!");
-    console.log("Размер кадра:", testCanvas.width, "x", testCanvas.height);
-    console.log("Чтобы посмотреть снимок, выполните: console.log(window.tradeResultState.lastFrameData)");
-    
-    return dataURL;
+    canvas.width = cropW;
+    canvas.height = cropH;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+    const dataURL = canvas.toDataURL("image/png");
+
+    console.log(`Захват области: X=${cropX}, Y=${cropY}, W=${cropW}, H=${cropH}`);
+    console.log("Кликните по ссылке ниже, чтобы открыть захваченную область в новой вкладке:");
+    console.log(dataURL);
 };
 
 testScreenAccess();
