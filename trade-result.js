@@ -1,4 +1,4 @@
-console.log("Trade Result Module Loaded");
+console.log("Trade Result Module Loaded v5");
 
 window.tradeResultState = {
     ready: false,
@@ -25,25 +25,23 @@ function testScreenAccess() {
                 video.videoWidth + " x " + video.videoHeight
             );
             console.log("-----------------------------------------");
-            console.log("Выполните debugBadge() в консоли для проверки вырезанной плашки.");
+            console.log("Запустите getCurrentPrice() в консоли для распознавания цены.");
         }
     }, 200);
 }
 
-// Отладочная функция: вырезает синюю плашку и выводит ссылки на изображения в консоль
-window.debugBadge = function() {
+// Захват точной области синей плашки цены
+function getPriceBadgeCanvas() {
     const video = document.getElementById("screenVideo");
-    if (!video || !window.tradeResultState.ready) {
-        console.log("Trade Result ERROR: Видеопоток не готов");
-        return;
-    }
+    if (!video || !window.tradeResultState.ready) return null;
 
     const vWidth = video.videoWidth;
     const vHeight = video.videoHeight;
 
-    const cropX = Math.floor(vWidth * 0.65);
+    // Вырезаем узкую вертикальную полосу возле правой оси (72% - 82% по ширине)
+    const cropX = Math.floor(vWidth * 0.72);
     const cropY = Math.floor(vHeight * 0.15);
-    const cropW = Math.floor(vWidth * 0.20);
+    const cropW = Math.floor(vWidth * 0.10);
     const cropH = Math.floor(vHeight * 0.70);
 
     const fullCanvas = document.createElement("canvas");
@@ -59,7 +57,7 @@ window.debugBadge = function() {
     let maxBlueCount = 0;
     let bestY = -1;
 
-    // Поиск синей полосы по критерию преобладания синего канала
+    // Ищем строку с максимальной концентрацией синего цвета
     for (let y = 0; y < cropH; y++) {
         let blueInRow = 0;
         for (let x = 0; x < cropW; x++) {
@@ -68,7 +66,8 @@ window.debugBadge = function() {
             const g = data[idx + 1];
             const b = data[idx + 2];
 
-            if (b > 70 && b > r + 15) {
+            // Формула для синей плашки Pocket Option (B заметно преобладает над R)
+            if (b > 90 && b > r + 25) {
                 blueInRow++;
             }
         }
@@ -78,34 +77,23 @@ window.debugBadge = function() {
         }
     }
 
-    console.log(`Результат поиска синей плашки: Y=${bestY}, Найдено синих пикселей в строке=${maxBlueCount}`);
-
     if (bestY === -1 || maxBlueCount < 5) {
-        console.log("СИНЯЯ ПЛАШКА НЕ НАЙДЕНА. Проверьте, активна ли страница Pocket Option.");
-        return;
+        return null;
     }
 
-    // Вырезаем плашку
-    const badgeH = 40;
+    // Вырезаем точный прямоугольник плашки по высоте (32px)
+    const badgeH = 32;
     const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
 
-    const rawCanvas = document.createElement("canvas");
-    rawCanvas.width = cropW;
-    rawCanvas.height = badgeH;
-    const rawCtx = rawCanvas.getContext("2d");
-    rawCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
+    const badgeCanvas = document.createElement("canvas");
+    badgeCanvas.width = cropW;
+    badgeCanvas.height = badgeH;
+    const badgeCtx = badgeCanvas.getContext("2d");
 
-    console.log("1. Оригинальный снимок вырезанной плашки (кликните ссылку ниже):");
-    console.log(rawCanvas.toDataURL("image/png"));
+    badgeCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
 
-    // Применяем инверсию и контраст для OCR
-    const processedCanvas = document.createElement("canvas");
-    processedCanvas.width = cropW;
-    processedCanvas.height = badgeH;
-    const procCtx = processedCanvas.getContext("2d");
-    procCtx.drawImage(rawCanvas, 0, 0);
-
-    const bImg = procCtx.getImageData(0, 0, cropW, badgeH);
+    // Увеличиваем контрастность: инвертируем синий фон в белый, а текст делаем чётким чёрным
+    const bImg = badgeCtx.getImageData(0, 0, cropW, badgeH);
     const bPix = bImg.data;
 
     for (let i = 0; i < bPix.length; i += 4) {
@@ -113,26 +101,72 @@ window.debugBadge = function() {
         const g = bPix[i + 1];
         const b = bPix[i + 2];
 
-        // Делаем светлые цифры черными, а сине-темный фон белым
-        if (r > 160 && g > 160 && b > 160) {
+        // Белые пиксели текста
+        const isText = (r > 180 && g > 180 && b > 180);
+
+        if (isText) {
             bPix[i] = 0;
             bPix[i + 1] = 0;
-            bPix[i + 2] = 0;
+            bPix[i + 2] = 0; // Черный шрифт
         } else {
             bPix[i] = 255;
             bPix[i + 1] = 255;
-            bPix[i + 2] = 255;
+            bPix[i + 2] = 255; // Белый фон
         }
     }
-    procCtx.putImageData(bImg, 0, 0);
 
-    console.log("2. Обработанный снимок для OCR (кликните ссылку ниже):");
-    console.log(processedCanvas.toDataURL("image/png"));
-};
+    badgeCtx.putImageData(bImg, 0, 0);
+    return badgeCanvas;
+}
 
-// Функция распознавания цены
+// Функция получения текущей цены
 window.getCurrentPrice = async function() {
-    window.debugBadge();
+    if (window.tradeResultState.isProcessingPrice) {
+        console.log("Trade Result: Идёт обработка...");
+        return null;
+    }
+
+    const canvas = getPriceBadgeCanvas();
+    if (!canvas) {
+        console.log("Trade Result ERROR: Синяя плашка цены не найдена на экране");
+        return null;
+    }
+
+    if (typeof Tesseract === "undefined") {
+        console.log("Trade Result ERROR: Библиотека Tesseract.js не подключена");
+        return null;
+    }
+
+    window.tradeResultState.isProcessingPrice = true;
+    console.log("Trade Result: Распознаём живую цену...");
+
+    try {
+        const worker = await Tesseract.createWorker("eng");
+        
+        await worker.setParameters({
+            tessedit_char_whitelist: "0123456789.",
+        });
+
+        const { data: { text } } = await worker.recognize(canvas);
+        await worker.terminate();
+
+        window.tradeResultState.isProcessingPrice = false;
+
+        const cleanText = text.replace(/[^0-9.]/g, "").trim();
+        const price = parseFloat(cleanText);
+
+        if (!isNaN(price) && price > 0) {
+            console.log("Trade Result SUCCESS: Распознана живая цена =", price);
+            return price;
+        } else {
+            console.log("Trade Result WARNING: Не удалось распознать цифры. Текст:", text);
+            return null;
+        }
+    } catch (err) {
+        window.tradeResultState.isProcessingPrice = false;
+        console.error("Trade Result OCR Error:", err);
+        return null;
+    }
 };
 
 testScreenAccess();
