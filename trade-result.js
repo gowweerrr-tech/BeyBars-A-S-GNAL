@@ -21,125 +21,40 @@ function testScreenAccess() {
             window.tradeResultState.ready = true;
 
             console.log("Trade Result: Video READY", video.videoWidth + " x " + video.videoHeight);
-            console.log("Запустите debugBadge() для визуальной проверки оси цен.");
+            console.log("-----------------------------------------");
+            console.log("Запустите debugBadge() для поиска шкалы цен на широком кадре.");
         }
     }, 200);
 }
 
-// Поиск и захват плашки цены
-function getExactPriceCanvas(debugMode = false) {
+// Захватывает всю правую часть экрана для точной локализации
+window.debugBadge = function() {
     const video = document.getElementById("screenVideo");
-    if (!video || !window.tradeResultState.ready) return null;
+    if (!video || !window.tradeResultState.ready) {
+        console.log("Trade Result ERROR: Видеопоток не готов");
+        return;
+    }
 
     const vWidth = video.videoWidth;
     const vHeight = video.videoHeight;
 
-    // Идеальная середина между графиком и правой панелью
-    const cropX = Math.floor(vWidth * 0.76); 
+    // Широкий захват: от 60% до 95% ширины экрана
+    const cropX = Math.floor(vWidth * 0.60);
     const cropY = Math.floor(vHeight * 0.10);
-    const cropW = Math.floor(vWidth * 0.07); 
+    const cropW = Math.floor(vWidth * 0.35);
     const cropH = Math.floor(vHeight * 0.80);
 
-    const fullCanvas = document.createElement("canvas");
-    fullCanvas.width = cropW;
-    fullCanvas.height = cropH;
+    const canvas = document.createElement("canvas");
+    canvas.width = cropW;
+    canvas.height = cropH;
 
-    const ctx = fullCanvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
     ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
-    if (debugMode) {
-        console.log("Ссылка на всю ось цен (проверьте, видна ли плашка):");
-        console.log(fullCanvas.toDataURL("image/png"));
-    }
-
-    const imgData = ctx.getImageData(0, 0, cropW, cropH);
-    const data = imgData.data;
-
-    let maxColorCount = 0;
-    let bestY = -1;
-
-    for (let y = 0; y < cropH; y++) {
-        let colorInRow = 0;
-        for (let x = 0; x < cropW; x++) {
-            const idx = (y * cropW + x) * 4;
-            const r = data[idx];
-            const b = data[idx + 2];
-
-            // Ищем синий/голубой оттенок живой плашки
-            if (b > 100 && b > r + 15) {
-                colorInRow++;
-            }
-        }
-        if (colorInRow > maxColorCount) {
-            maxColorCount = colorInRow;
-            bestY = y;
-        }
-    }
-
-    if (bestY === -1 || maxColorCount < 5) {
-        if (debugMode) console.log("Trade Result Debug: Синяя плашка не найдена на полосе.");
-        return null;
-    }
-
-    const badgeH = 36;
-    const startY = Math.max(0, bestY - Math.floor(badgeH / 2));
-
-    const badgeCanvas = document.createElement("canvas");
-    badgeCanvas.width = cropW;
-    badgeCanvas.height = badgeH;
-    const badgeCtx = badgeCanvas.getContext("2d");
-
-    badgeCtx.drawImage(fullCanvas, 0, startY, cropW, badgeH, 0, 0, cropW, badgeH);
-
-    return badgeCanvas;
-}
-
-window.debugBadge = function() {
-    getExactPriceCanvas(true);
-};
-
-window.getCurrentPrice = async function() {
-    if (window.tradeResultState.isProcessingPrice) {
-        console.log("Trade Result: Уже идёт процесс распознавания...");
-        return null;
-    }
-
-    const canvas = getExactPriceCanvas(false);
-    if (!canvas) {
-        console.log("Trade Result ERROR: Плашка цены не найдена");
-        return null;
-    }
-
-    if (typeof Tesseract === "undefined") {
-        console.log("Trade Result ERROR: Tesseract.js не загружен");
-        return null;
-    }
-
-    window.tradeResultState.isProcessingPrice = true;
-
-    try {
-        const worker = await Tesseract.createWorker("eng");
-        await worker.setParameters({ tessedit_char_whitelist: "0123456789." });
-        const { data: { text } } = await worker.recognize(canvas);
-        await worker.terminate();
-
-        window.tradeResultState.isProcessingPrice = false;
-
-        const cleanText = text.replace(/[^0-9.]/g, "").trim();
-        const price = parseFloat(cleanText);
-
-        if (!isNaN(price)) {
-            console.log("Trade Result SUCCESS: Живая цена =", price);
-            return price;
-        } else {
-            console.log("Trade Result WARNING: Сырой текст с плашки:", text);
-            return null;
-        }
-    } catch (err) {
-        window.tradeResultState.isProcessingPrice = false;
-        console.error("Trade Result OCR Error:", err);
-        return null;
-    }
+    console.log("Широкий захват правой части экрана (от 60% до 95%):");
+    console.log("Разрешение кадра:", vWidth, "x", vHeight);
+    console.log("Ссылка на изображение:");
+    console.log(canvas.toDataURL("image/png"));
 };
 
 testScreenAccess();
