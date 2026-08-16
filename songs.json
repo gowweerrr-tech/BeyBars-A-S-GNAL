@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "title": "Название песни",
+    "artist": "Исполнитель",
+    "key": "Am",
+    "language": "tr",
+    "favorite": true,
+    "content": [
+      {
+        "chords": "Am       F",
+        "text": "Текст первой строки"
+      },
+      {
+        "chords": "C        G",
+        "text": "Текст второй строки"
+      }
+    ]
+  }
+]
