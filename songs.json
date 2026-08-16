@@ -131,5 +131,163 @@
       "section": "Припев"
     }
   ]
+},
+  {
+  "id": 3,
+  "title": "Название песни 2",
+  "artist": "Исполнитель",
+  "key": "C",
+  "language": "tr",
+  "favorite": false,
+  "intro": "",
+  "content": [
+    {
+      "section": "KITA 1",
+      "chords": "C G Am F",
+      "text": "Uyanıyorum Yeni bir güne Yine kuş sesleriyle"
+    },
+    {
+      "chords": "C G",
+      "text": "Geride kaldı Tüm kötü anılar"
+    },
+    {
+      "chords": "Am F",
+      "text": "Geçti artık korkular"
+    },
+    {
+      "chords": "C G Am",
+      "text": "Keşfedecek ne çok şey var"
+    },
+    {
+      "chords": "F",
+      "text": "Tadını çıkar"
+    },
+    {
+      "chords": "C G Am F",
+      "text": "Bizi bekleyen harika bir gelecek var"
+    },
+    {
+      "section": "HAZIRLIK",
+      "chords": "Dm Fm",
+      "text": "Bekle sen ümitle o günü"
+    },
+    {
+      "section": "NAKARAT",
+      "chords": "C",
+      "text": "Ve dünya cennet oldu"
+    },
+    {
+      "chords": "G Am F",
+      "text": "Tüm acılar artık son buldu"
+    },
+    {
+      "chords": "C G",
+      "text": "Bak Ye hava, sildi gözyaşını"
+    },
+    {
+      "chords": "Am F C",
+      "text": "Sözünü tuttu, düş değil bu"
+    },
+    {
+      "section": "KITA 2",
+      "chords": "G",
+      "text": "Sonsuz yaşam, cennet yeryüzünde."
+    },
+    {
+      "chords": "Am F",
+      "text": "Çok iş var önümüzde"
+    },
+    {
+      "chords": "C G Am",
+      "text": "Dur kulak ver, ne güzel gelen sesler."
+    },
+    {
+      "chords": "Am F",
+      "text": "Her yerde, gülen yüzler"
+    },
+    {
+      "chords": "C G Am F",
+      "text": "Gözündeki ışıltılar asla kaybolmaz."
+    },
+    {
+      "chords": "C G Am F",
+      "text": "Yüzündeki gülümseme hiç solmaz."
+    },
+    {
+      "section": "KÖPRÜ",
+      "chords": "F Dm C/E F C",
+      "text": "Az kaldı Gelecek o gün mutlaka"
+    },
+    {
+      "chords": "G",
+      "text": "unutma"
+    },
+    {
+      "chords": "F Dm C/E F C G",
+      "text": "az kaldı dinecek tüm acıların yakında"
+    },
+    {
+      "section": "NAKARAT",
+      "chords": "C G Am F"
+    },
+    {
+      "chords": "C G Am F"
+    }
+  ]
+},
+  {
+  "id": 4,
+  "title": "Ягода-малинка",
+  "artist": "Хабиб",
+  "key": "Em",
+  "language": "ru",
+  "favorite": false,
+  "intro": "Em | Em",
+  "content": [
+    {
+      "section": "Вступление",
+      "chords": "Em | Em"
+    },
+    {
+      "section": "Припев ×2",
+      "chords": "Em C D Hm C Am H7"
+      "text":
+    },
+    {
+      "section": "Куплет 1",
+      "chords": "Em C D Hm C Am H7"
+      "text":
+    },
+    {
+      "section": "Куплет 2",
+      "chords": "Em C D Hm C Am H7"
+      "text":
+    },
+    {
+      "section": "Припев ×2",
+      "chords": "Em C D Hm C Am H7"
+      "text":
+    },
+    {
+      "section": "Куплет 3",
+      "chords": "Em C D Hm C Am H7"
+      "text":
+    },
+    {
+      "section": "Куплет 4",
+      "chords": "Em C D Hm C Am H7"
+      "text":
+    },
+    {
+      "section": "Припев ×2",
+      "chords": "Em C D Hm C Am H7"
+      "text":
+    },
+    {
+      "section": "Финал",
+      "chords": "Em C D Hm C Am H7"
+      "text":
+    }
+  ]
 }
 ]
