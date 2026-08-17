@@ -1,1 +1,0 @@
-# BeyBars-A-S-GNAL
